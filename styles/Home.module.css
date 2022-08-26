@@ -108,6 +108,23 @@
   margin-left: 0.5rem;
 }
 
+.background {
+  color: #292121;
+}
+
+.hero {
+  background-color: #191414;
+  position: relative;
+  top: 25%;
+  height: 60%;
+  width: 100vw;
+}
+
+.heroText {
+  position: relative;
+  top: 30%;
+}
+
 @media (max-width: 600px) {
   .grid {
     width: 100%;
