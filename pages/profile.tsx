@@ -68,6 +68,7 @@ export default function Profile(props: { SPOTIFYDATA: any; SESSION: Session; }) 
           <Container className={`mt-3 mx-auto p-0 position-relative w-auto`}>
             <Image
               src={SESSION.user.image}
+              alt='User profile image'
               width="270"
               height="270"
               className="rounded-circle border border-dark border-4"
