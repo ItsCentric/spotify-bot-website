@@ -112,17 +112,19 @@
   color: #292121;
 }
 
-.hero {
-  background-color: #191414;
-  position: relative;
-  top: 25%;
-  height: 60%;
-  width: 100vw;
+.heroContainer {
+  background-color: #1DB954;
+  height: 55vh;
 }
 
 .heroText {
   position: relative;
-  top: 30%;
+  top: 35%;
+  z-index: 1;
+}
+
+.spotifyColor {
+  color: #1DB954;
 }
 
 @media (max-width: 600px) {

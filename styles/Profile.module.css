@@ -1,0 +1,13 @@
+.userStatsContainer {
+    flex-basis: 60%;
+    row-gap: 2em;
+}
+
+.userInfoContainer {
+    max-width: 25%;
+    flex-basis: 20%;
+}
+
+.userInfoTextContainer {
+    column-gap: 0.5em;
+}
