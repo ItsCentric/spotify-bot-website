@@ -22,6 +22,7 @@ export default function Home() {
         </p>
         <Image
           src={require("../assets/herobanner.svg")}
+          alt=''
           layout="fill"
           priority
         ></Image>
@@ -72,7 +73,7 @@ export default function Home() {
             </svg>
             <h3 className={`d-inline-block ms-2 align-middle`}>Lyrics</h3>
             <p className={`mt-1`}>
-              Search up lyrics for the current song you're listening to using
+              Search up lyrics for the current song you&apos;re listening to using
               Genius!
             </p>
           </Container>

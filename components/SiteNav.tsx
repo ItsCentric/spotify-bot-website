@@ -42,7 +42,7 @@ export default function SiteNav() {
               </ButtonGroup>
             </ButtonToolbar>
           </Navbar.Collapse>
-          <span className="d-none d-md-inline align-middle"><Image src={session.user.image} width="64" height="64" className="rounded-circle"></Image></span>
+          <span className="d-none d-md-inline align-middle"><Image src={session.user.image} alt='User profile image' width="64" height="64" className="rounded-circle"></Image></span>
         </Container>
       </Navbar>
     );
