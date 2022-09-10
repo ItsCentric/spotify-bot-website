@@ -62,10 +62,10 @@ export default function Profile(props: { SPOTIFYDATA: any; SESSION: Session; }) 
       </Head>
       <SiteNav></SiteNav>
 
-      <Container className={`d-flex flex-column flex-md-row p-0`} fluid>
+      <Container className={`d-flex flex-column p-0`} fluid>
         {/* USER INFORMATION */}
-        <Container className={`mx-0 d-flex flex-column text-bg-light ${styles.userInfoContainer} w-100`}>
-          <Container className={`mt-3 p-0 position-relative w-50`}>
+        <Container className={`d-flex flex-column text-bg-light ${styles.userInfoContainer}`} fluid>
+          <Container className={`mt-3 mx-auto p-0 position-relative w-auto`}>
             <Image
               src={SESSION.user.image}
               width="270"

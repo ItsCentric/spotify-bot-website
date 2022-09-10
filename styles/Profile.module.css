@@ -5,6 +5,7 @@
 
 .userInfoContainer {
     flex-basis: 20%;
+    border-bottom: 5px solid black;
 }
 
 .userInfoTextContainer {
