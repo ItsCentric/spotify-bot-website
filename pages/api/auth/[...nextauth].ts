@@ -124,6 +124,10 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
   },
+  theme: {
+    logo: 'http://1000logos.net/wp-content/uploads/2017/08/Spotify-Logo.png',
+    brandColor: '#38d65e'
+  }
 };
 
 

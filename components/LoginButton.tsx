@@ -6,7 +6,6 @@ export default function LoginButton() {
     if (session) {
       return (
         <>
-          <Button variant="light" href="/profile">Profile</Button>
           <Button variant="danger" onClick={() => signOut()} className="me-2 d-inline-block align-middle">Log Out</Button>
         </>
       )

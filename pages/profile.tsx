@@ -50,7 +50,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   };
 }
 
-export default function Profile(props) {
+export default function Profile(props: { SPOTIFYDATA: any; SESSION: Session; }) {
   const SPOTIFYDATA = props.SPOTIFYDATA;
   const SESSION: Session = props.SESSION;
   const FORMATTER = new Intl.NumberFormat("en-US");
@@ -62,10 +62,10 @@ export default function Profile(props) {
       </Head>
       <SiteNav></SiteNav>
 
-      <Container className={`d-flex p-0`} fluid>
+      <Container className={`d-flex flex-column flex-md-row p-0`} fluid>
         {/* USER INFORMATION */}
-        <Container className={`ms-0 text-bg-light ${styles.userInfoContainer}`}>
-          <Container className={`${styles.userProfilePicture} mt-3 p-0 position-relative top-0 start-50 translate-middle-x`}>
+        <Container className={`mx-0 d-flex flex-column text-bg-light ${styles.userInfoContainer} w-100`}>
+          <Container className={`mt-3 p-0 position-relative w-50`}>
             <Image
               src={SESSION.user.image}
               width="270"
@@ -74,17 +74,17 @@ export default function Profile(props) {
             ></Image>
           </Container>
           <Link href={SPOTIFYDATA.userInfo.external_urls.spotify}><h1 className="text-center">{SESSION.user.name}</h1></Link>
-          <Container className={`p-0 d-flex ${styles.userInfoTextContainer}`}>
-            <p className="d-inline-block fw-semibold text-center"><span className="fw-bold fs-4">Country:</span> {'\n'}{SPOTIFYDATA.userInfo.country}</p>
-            <p className="d-inline-block fw-semibold text-center"><span className="fw-bold fs-4">Followers:</span> {'\n'}{SPOTIFYDATA.userInfo.followers.total}</p>
-            <p className="d-inline-block fw-semibold text-center"><span className="fw-bold fs-4">Plan:</span> {'\n'}{SPOTIFYDATA.userInfo.product == "open" ? "free" : "premium"}</p>
+          <Container className={`p-0 d-flex justify-content-center ${styles.userInfoTextContainer}`}>
+            <p className="d-inline-block fw-semibold text-center me-2"><span className="fw-bold fs-4">Country:</span> {'\n'}{SPOTIFYDATA.userInfo.country}</p>
+            <p className="d-inline-block fw-semibold text-center me-2"><span className="fw-bold fs-4">Followers:</span> {'\n'}{SPOTIFYDATA.userInfo.followers.total}</p>
+            <p className="d-inline-block fw-semibold text-center"><span className="fw-bold fs-4">Plan:</span> {'\n'}{SPOTIFYDATA.userInfo.product == "open" ? "Free" : "Premium"}</p>
           </Container>
           <Container className={`p-0 d-flex ${styles.userInfoTextContainer}`}>
           </Container>
         </Container>
 
         {/* USER STATS */}
-        <Container className={`px-5 d-flex flex-column ${styles.userStatsContainer} mb-5`}>
+        <Container className={`px-5 d-flex flex-column ${styles.userStatsContainer} my-5`}>
           {/* TOP TRACKS */}
           <Container>
             <h1 className={`d-inline-block ${styles.userStatsFlex}`}>Top 3 Tracks</h1>
