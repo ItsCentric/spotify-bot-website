@@ -59,6 +59,9 @@ export default function Profile(props: { SPOTIFYDATA: any; SESSION: Session; }) 
     <div className="text-bg-dark">
       <Head>
         <title>Spotify Bot | Profile</title>
+        <meta name='robots' content='noindex' key='robots' />
+        <link rel="icon" href="public\spotify-logo.png" type="image/icon type"></link>
+        <link rel='canonical' href='https://spotify-bot.vercel.app/' key='canonical'/>
       </Head>
       <SiteNav></SiteNav>
 
