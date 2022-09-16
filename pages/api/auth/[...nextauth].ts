@@ -80,8 +80,6 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async jwt({ token, user, account }) {
-      console.log(token, user, account)
-      
       if (account) {
         token.accessToken = account.access_token;
       }
@@ -99,9 +97,6 @@ export const authOptions: NextAuthOptions = {
             expires_at: account.expires_at * 1000,
           } 
         })
-
-        
-        console.log(`ACCESS TOKEN: ${account.access_token} \nEXPIRES: ${Date.now() + account.expires_at * 1000} \nREFRESH TOKEN: ${account.refresh_token} \nUSER ID: ${user.id}`)
         return {
           accessToken: account.access_token,
           accessTokenExpires: Date.now() + account.expires_at * 1000,
@@ -126,8 +121,8 @@ export const authOptions: NextAuthOptions = {
     },
   },
   theme: {
-    logo: 'http://1000logos.net/wp-content/uploads/2017/08/Spotify-Logo.png',
-    brandColor: '#38d65e'
+    logo: 'https://i.postimg.cc/tRvhD7Ld/music-wizard-pfp.png',
+    brandColor: '#9030FF'
   }
 };
 

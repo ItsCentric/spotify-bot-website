@@ -1,5 +1,5 @@
 .heroContainer {
-  background-color: #1DB954;
+  /* background-color: #1DB954; */
   height: 55vh;
 }
 
@@ -9,26 +9,16 @@
   z-index: 1;
 }
 
-.stepNumbers {
-  font-size: 20em;
-  opacity: 0.5;
-}
-
 .bordercolor {
-  border-color: #1DB954 !important;
+  border-color: var(--accent-color) !important;
 }
 
-.spotifyColor {
-  color: #1DB954;
+.textHighlight {
+  color: var(--primary-color);
 }
 
 .form {
   background-color: #343a40;
-}
-
-.footer {
-  height: 8vh;
-  background-color: black !important;
 }
 
 @media (max-width: 600px) {

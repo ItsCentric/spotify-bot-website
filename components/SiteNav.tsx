@@ -17,7 +17,12 @@ export default function SiteNav() {
     return (
       <Navbar bg="dark" variant="dark" expand="sm" collapseOnSelect>
         <Container>
-          <Navbar.Brand href="/">Spotify Bot</Navbar.Brand>
+          <Image
+            src='/../public/favicon.ico'
+            width={40}
+            height={40}
+          ></Image>
+          <Navbar.Brand href="/" className='ms-2'>Music Wizard</Navbar.Brand>
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse id="basic-navbar-nav" className='justify-content-between'>
             <Nav>
@@ -51,7 +56,12 @@ export default function SiteNav() {
     return (
       <Navbar bg="dark" variant="dark" expand="sm" collapseOnSelect>
         <Container>
-          <Navbar.Brand href="/">Spotify Bot</Navbar.Brand>
+          <Image
+            src='/../public/favicon.ico'
+            width={40}
+            height={40}
+          ></Image>
+          <Navbar.Brand href="/" className='ms-2'>Music Wizard</Navbar.Brand>
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse id="basic-navbar-nav" className='justify-content-between'>
             <Nav>

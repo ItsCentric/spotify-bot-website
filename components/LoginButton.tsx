@@ -6,7 +6,14 @@ export default function LoginButton() {
     if (session) {
       return (
         <>
-          <Button variant="danger" onClick={() => signOut()} className="me-2 d-inline-block align-middle">Log Out</Button>
+          <Button 
+          variant="danger" 
+          onClick={async () => {
+            await signOut();
+            location.href='/';
+          }} 
+          className="me-2 d-inline-block align-middle"
+          >Log Out</Button>
         </>
       )
     }

@@ -3,6 +3,7 @@ import Image from "next/image";
 import styles from "../styles/Home.module.css";
 import Container from "react-bootstrap/Container";
 import SiteNav from "../components/SiteNav";
+import Footer from '../components/Footer';
 import Form from 'react-bootstrap/Form';
 import Link from 'next/link';
 import Button from 'react-bootstrap/Button';
@@ -12,7 +13,7 @@ export default function Home() {
   return (
     <div className="text-bg-dark">
       <Head>
-        <title>Spotify Bot for Discord</title>
+        <title>Music Wizard</title>
         <meta name='description' content='A Discord bot that intergrates features from Spotify.' key='desc' />
         <meta property='og:title' content='Spotify Discord Bot'  />
         <meta property='og:description' content='A Discord bot that intergrates features from Spotify. See your top songs and artists, recent songs, your friends top songs and artists, what theyre listening to, and more!' />
@@ -32,6 +33,7 @@ export default function Home() {
           src={require("../public/herobanner.svg")}
           alt=''
           layout="fill"
+          objectFit="cover"
           priority
         ></Image>
       </Container>
@@ -39,10 +41,10 @@ export default function Home() {
       <Container id="about">
         <Container className={`my-5 mx-auto`}>
           <h1 className={`text-center fw-bold`}>
-            What is <span className={styles.spotifyColor}>Spotify Bot</span>?
+            What is <span className={styles.textHighlight}>Music Wizard</span>?
           </h1>
           <p className={`text-center fw-semibold`}>
-            Spotify Bot is a feature rich Discord bot for... well... Discord.
+            Music Wizard is a feature rich Discord bot for... well... Discord.
             You can do a multituide of things, ranging from queuing songs,
             finding information about songs and albums, searching for lyrics,
             and much more! Read more about it below.
@@ -121,7 +123,7 @@ export default function Home() {
       <Container className={`mx-auto`} id='help'>
         <Container className='my-5 mx-auto'>
           <h1 className={`text-center fw-bold`}>How do I use it?</h1>
-          <p className='text-center fw-semibold'>Getting started with Spotify Bot is easy! All it takes is <span className={styles.spotifyColor}>four simple steps.</span></p>
+          <p className='text-center fw-semibold'>Getting started with Music Wizard is easy! All it takes is <span className={styles.textHighlight}>four simple steps.</span></p>
           <Container className={`d-flex flex-column justify-content-center`}>
             <Container className={`d-flex mb-4`}>
               <p className={`fs-1 d-inline-block me-2 text-center m-0`}>1.</p>
@@ -162,10 +164,7 @@ export default function Home() {
           </Form>
         </Container>
       </Container>
-      <Container className={`${styles.footer} pt-2`} fluid>
-        <Link href='#'><p className='text-center'>Back to the top</p></Link>
-        <p className={`text-center mb-0`}>Copyright 2022 All Rights Reserved.</p>
-      </Container>
+      <Footer></Footer>
     </div>
   );
 }
