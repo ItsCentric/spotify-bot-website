@@ -68,7 +68,7 @@ export default function Profile(props: { SPOTIFYDATA: any; SESSION: Session; }) 
         <div className='flex flex-col gap-6'>
           <div className='flex flex-col py-4 gap-2 bg-zinc-100 text-black rounded-md'>
             <div className='mx-auto p-0 relative w-auto'>
-              <Image src={SESSION.user.image} className='rounded-full border-4 border-zinc-700' alt='user spotify profile image'></Image>
+              <Image src={SESSION.user.image} className='rounded-full border-4 border-zinc-700' alt='user spotify profile image' width={270} height={270}></Image>
             </div>
             <span className='text-center text-3xl font-medium'><Link href={SPOTIFYDATA.userInfo.external_urls.spotify}>{SESSION.user.name}</Link></span>
             <div className='flex justify-center gap-4'>
@@ -89,15 +89,6 @@ export default function Profile(props: { SPOTIFYDATA: any; SESSION: Session; }) 
               </p>
             </div>
           </div>
-
-          {/* SETTINGS */}
-          <div className='bg-zinc-100 text-black rounded-md p-4'>
-            <ul className='divide-y-2 text-center'>
-              <li className='font-medium'>Top Items</li>
-              <li className='font-medium'>Settings</li>
-              <li className='font-medium'>Log Out</li>
-            </ul>
-          </div>
         </div>
 
         {/* USER STATS */}
@@ -107,12 +98,6 @@ export default function Profile(props: { SPOTIFYDATA: any; SESSION: Session; }) 
           <div>
             <h2 className='text-3xl inline-block'>Top 3 Tracks</h2>
             <p className="inline-block text-white/50 font-light ml-2">{'(Last 6 months)'}</p>
-            <ul className='flex flex-row gap-2 divide-x-2 divide-white font-light'>
-              <li><Link href='/'>All-Time</Link></li>
-              <li className='pl-2'><Link href='/'>Last year</Link></li>
-              <li className='pl-2'><Link href='/'>Last 6 months</Link></li>
-            </ul>
-
             <div className='flex flex-col md:flex-row md:justify-evenly gap-4 mt-2'>
               <SpotifyStatCard type='track' data={SPOTIFYDATA.topTracks.items[0]} />
               <SpotifyStatCard type='track' data={SPOTIFYDATA.topTracks.items[1]} />
@@ -163,7 +148,7 @@ async function fetchSpotifyData(token: any) {
       },
     })
     .then((res) => (spotifyData.userInfo = res.data))
-    .catch((err) => console.log(err));
+    .catch((err) => console.log(err.message));
 
   await axios.get("https://api.spotify.com/v1/me/top/tracks", {
     headers: {
@@ -174,7 +159,7 @@ async function fetchSpotifyData(token: any) {
     }
   })
   .then(res => spotifyData.topTracks = res.data)
-  .catch(err => console.log(err))
+  .catch(err => console.log(err.message))
   
   await axios.get("https://api.spotify.com/v1/me/top/artists", {
     headers: {
@@ -185,7 +170,7 @@ async function fetchSpotifyData(token: any) {
     }
   })
   .then(res => spotifyData.topArtists = res.data)
-  .catch(err => console.log(err))
+  .catch(err => console.log(err.message))
 
   return spotifyData;
 }

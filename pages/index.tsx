@@ -1,5 +1,4 @@
 import Head from "next/head";
-import Image from "next/image";
 import SiteNav from "../components/SiteNav";
 import Footer from '../components/Footer';
 
@@ -20,7 +19,7 @@ export default function Home() {
       {
       //* HERO SECTION
       }
-      <div className='relative h-[30vh] md:h-[55vh] flex justify-center items-center'>
+      <div className='relative h-[30vh] md:h-[55vh] flex justify-center items-center bg-[url("/herobanner.svg")]'>
         <div className='relative z-10'>
           <h1 className='text-center text-5xl font-medium'>
             The New Kid in Town.
@@ -29,13 +28,6 @@ export default function Home() {
             Written and developed by Centric.
           </p>
         </div>
-        <Image
-          src={require("../public/herobanner.svg")}
-          alt=''
-          layout="fill"
-          objectFit="cover"
-          priority
-        ></Image>
       </div>
 
       {
