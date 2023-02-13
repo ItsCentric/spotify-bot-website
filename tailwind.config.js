@@ -10,8 +10,7 @@ module.exports = {
     extend: {
       colors: {
         primary: '#9030FF',
-        secondary: '#72A98F',
-        cream: '#F7ECE1',
+        secondary: '#37BEAC',
       },
       fontFamily: {
         sans: ['Rubik', ...defaultTheme.fontFamily.sans],
