@@ -9,8 +9,16 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: '#9030FF',
-        secondary: '#37BEAC',
+        primary: {
+          base: '#8D1DF5',
+          dark: '#5903A8'
+        },
+        secondary: '#F5AA36',
+        green: {
+          light: '#05F558',
+          dark: '#0CA842'
+        },
+        blackRaspberry: '#201926',
       },
       fontFamily: {
         sans: ['Rubik', ...defaultTheme.fontFamily.sans],
