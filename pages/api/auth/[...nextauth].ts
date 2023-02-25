@@ -1,12 +1,12 @@
 import NextAuth from "next-auth";
 import type { NextAuthOptions } from 'next-auth'
 import SpotifyProvider from "next-auth/providers/spotify";
-import EmailProvider from "next-auth/providers/email";
 import axios from 'axios';
 import { MongoDBAdapter } from "@next-auth/mongodb-adapter"
 import clientPromise from '../../../lib/mongodb';
 import { encryption } from "../../../lib/utils";
-import * as mongodb from 'mongodb';
+import { ObjectId } from "mongodb";
+import type { Db, Collection, Document } from "mongodb";
 
 /**
  * Takes a token, and returns a new token with updated
@@ -15,20 +15,17 @@ import * as mongodb from 'mongodb';
  */
 export async function refreshAccessToken(token) {
   try {
-    const url =
-      "https://accounts.spotify.com/api/token" +
+    const response = await axios.post('https://accounts.spotify.com/api/token', 
       new URLSearchParams({
         grant_type: "refresh_token",
-        refresh_token: token.refresh_token,
-      });
-
-    const response = await axios.get(url, {
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        "Authorization": `Basic ${Buffer.from(process.env.SPOTIFY_ID + ":" + process.env.SPOTIFY_SECRET).toString("base64")}`,
-      },
-      method: "POST",
-    });
+        refresh_token: token.refreshToken,
+      }),
+      {
+        headers: {
+          "Authorization": `Basic ${Buffer.from(process.env.SPOTIFY_ID + ":" + process.env.SPOTIFY_SECRET).toString("base64")}`,
+        },
+      }
+    );
 
     const refreshedTokens = await response.data;
 
@@ -39,11 +36,12 @@ export async function refreshAccessToken(token) {
     return {
       ...token,
       accessToken: refreshedTokens.access_token,
-      accessTokenExpires: Date.now() + refreshedTokens.expires_at * 1000,
+      accessTokenExpires: Date.now() + refreshedTokens.expires_in,
       refreshToken: refreshedTokens.refresh_token ?? token.refreshToken, // Fall back to old refresh token
+      error: null,
     };
   } catch (error) {
-    console.log(error);
+    console.log(error.response.data, error.message, error.response.status, error.response.headers);
 
     return {
       ...token,
@@ -63,7 +61,7 @@ export const authOptions: NextAuthOptions = {
       authorization: {
         params: {
           scope:
-            "user-read-recently-played user-read-playback-state user-read-email user-top-read user-read-currently-playing user-library-read user-read-private",
+            "user-read-recently-played user-read-playback-state user-read-email user-top-read user-read-currently-playing user-library-read user-read-private user-modify-playback-state",
         },
       },
     }),
@@ -75,21 +73,21 @@ export const authOptions: NextAuthOptions = {
       }
       // Initial sign in
       if (account && user) {
-        let db: mongodb.Db;
-        let collection: mongodb.Collection<mongodb.Document>
+        let db: Db;
+        let collection: Collection<Document>
 
         await clientPromise.then(client => db = client.db('test'))
         collection = db.collection('accounts');
-        await collection.updateOne({ userId: new mongodb.ObjectId(user.id) }, { 
+        await collection.updateOne({ userId: new ObjectId(user.id) }, { 
           $set: { 
             access_token: account.access_token,
             refresh_token: encryption(account.refresh_token),
-            expires_at: account.expires_at * 1000,
+            expires_at: Date.now() + 3600,
           } 
         })
         return {
           accessToken: account.access_token,
-          accessTokenExpires: Date.now() + account.expires_at * 1000,
+          accessTokenExpires: Date.now() + 3600,
           refreshToken: account.refresh_token,
           user,
         };
@@ -106,14 +104,11 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token, user }) {
       session.user = token.user;
       session.accessToken = token.accessToken;
+      session.accessTokenExpires = token.accessTokenExpires;
       session.error = token.error;
       return session;
     },
   },
-  theme: {
-    logo: 'https://i.postimg.cc/tRvhD7Ld/music-wizard-pfp.png',
-    brandColor: '#9030FF'
-  }
 };
 
 
