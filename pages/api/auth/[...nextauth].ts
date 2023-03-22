@@ -1,12 +1,12 @@
-import NextAuth from "next-auth";
-import type { NextAuthOptions } from 'next-auth'
-import SpotifyProvider from "next-auth/providers/spotify";
+import NextAuth from 'next-auth';
+import type { NextAuthOptions } from 'next-auth';
+import SpotifyProvider from 'next-auth/providers/spotify';
 import axios from 'axios';
-import { MongoDBAdapter } from "@next-auth/mongodb-adapter"
+import { MongoDBAdapter } from '@next-auth/mongodb-adapter';
 import clientPromise from '../../../lib/mongodb';
-import { encryption } from "../../../lib/utils";
-import { ObjectId } from "mongodb";
-import type { Db, Collection, Document } from "mongodb";
+import encryption from '../../../lib/encryption';
+import { ObjectId } from 'mongodb';
+import type { Db, Collection, Document } from 'mongodb';
 
 /**
  * Takes a token, and returns a new token with updated
@@ -15,14 +15,17 @@ import type { Db, Collection, Document } from "mongodb";
  */
 export async function refreshAccessToken(token) {
   try {
-    const response = await axios.post('https://accounts.spotify.com/api/token', 
+    const response = await axios.post(
+      'https://accounts.spotify.com/api/token',
       new URLSearchParams({
-        grant_type: "refresh_token",
+        grant_type: 'refresh_token',
         refresh_token: token.refreshToken,
       }),
       {
         headers: {
-          "Authorization": `Basic ${Buffer.from(process.env.SPOTIFY_ID + ":" + process.env.SPOTIFY_SECRET).toString("base64")}`,
+          Authorization: `Basic ${Buffer.from(
+            process.env.SPOTIFY_ID + ':' + process.env.SPOTIFY_SECRET
+          ).toString('base64')}`,
         },
       }
     );
@@ -45,14 +48,14 @@ export async function refreshAccessToken(token) {
 
     return {
       ...token,
-      error: "RefreshAccessTokenError",
+      error: 'RefreshAccessTokenError',
     };
   }
 }
 
 export const authOptions: NextAuthOptions = {
   adapter: MongoDBAdapter(clientPromise),
-  session: { strategy: "jwt" },
+  session: { strategy: 'jwt' },
   secret: process.env.NEXTAUTH_SECRET,
   providers: [
     SpotifyProvider({
@@ -61,7 +64,7 @@ export const authOptions: NextAuthOptions = {
       authorization: {
         params: {
           scope:
-            "user-read-recently-played user-read-playback-state user-read-email user-top-read user-read-currently-playing user-library-read user-read-private user-modify-playback-state",
+            'user-read-recently-played user-read-playback-state user-read-email user-top-read user-read-currently-playing user-library-read user-read-private user-modify-playback-state',
         },
       },
     }),
@@ -74,17 +77,20 @@ export const authOptions: NextAuthOptions = {
       // Initial sign in
       if (account && user) {
         let db: Db;
-        let collection: Collection<Document>
+        let collection: Collection<Document>;
 
-        await clientPromise.then(client => db = client.db('test'))
+        await clientPromise.then((client) => (db = client.db('test')));
         collection = db.collection('accounts');
-        await collection.updateOne({ userId: new ObjectId(user.id) }, { 
-          $set: { 
-            access_token: account.access_token,
-            refresh_token: encryption(account.refresh_token),
-            expires_at: Date.now() + 3600,
-          } 
-        })
+        await collection.updateOne(
+          { userId: new ObjectId(user.id) },
+          {
+            $set: {
+              access_token: account.access_token,
+              refresh_token: encryption(account.refresh_token),
+              expires_at: Date.now() + 3600,
+            },
+          }
+        );
         return {
           accessToken: account.access_token,
           accessTokenExpires: Date.now() + 3600,
@@ -110,6 +116,5 @@ export const authOptions: NextAuthOptions = {
     },
   },
 };
-
 
 export default NextAuth(authOptions);
