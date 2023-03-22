@@ -1,42 +1,19 @@
-import format from "date-fns/format";
 import Image from "next/image";
+import { convertDuration, generateArtistListJSX } from "../lib/utils";
 
-function convertDuration(time: Date): string {
-  let seconds: number | string = time.getSeconds();
-  let minutes: number | string = time.getMinutes();
-
-  if (seconds > 10) {
-    seconds = seconds.toString();
-  }
-  else {
-    seconds = `0${seconds}`;
-  }
-  if (time.getMinutes() > 10) {
-    return time.toLocaleTimeString(undefined, { minute: 'numeric', second: '2-digit' });
-  }
-  else {
-    minutes = minutes.toString();
-
-    minutes = minutes.split('0')[0];
-    return `${minutes}:${seconds}`;
-  }
-}
-
-export default function SpotifyStatCard(props: { type: 'track' | 'artist', data: any }) {
+export default function SpotifyStatCard(props: { data: SpotifyApi.TrackObjectFull | SpotifyApi.ArtistObjectFull }) {
   const numberFormatter = new Intl.NumberFormat("en-US");
-
-  if (props.type == 'track') {
+  
+  if ('album' in props.data) {
     const spotifyArtistArray = props.data.artists;
-    let artists = [];
-    spotifyArtistArray.forEach((artist, i: number) => {
-      //* formatting the list of artists
-      if (i !== spotifyArtistArray.length - 1) artists.push(<span><a href={artist.external_urls.spotify} key={props.data.id} target='_blank' rel='noreferrer' className='hover:text-green-dark transition-colors'>{` ${artist.name}`}</a>,</span>);
-      else artists.push(<a href={artist.external_urls.spotify} key={props.data.id} className='hover:text-green-dark transition-colors' target='_blank' rel='noreferrer'>{` ${artist.name}`}</a>);
-    });
+    const artists = generateArtistListJSX(spotifyArtistArray);
 
     return (
-        <div className='bg-white flex flex-col gap-2 p-4 rounded-md flex-1 min-w-0'>
-          <div>
+        <div className={'bg-blackRaspberry-600 lg:space-y-2 p-4 rounded-md grid grid-cols-2 gap-2 lg:gap-0 lg:block lg:grid-cols-none min-w-0'}>
+          <div className='relative'>
+            <div className='absolute right-0 bottom-0 bg-white rounded-tl-lg px-1 py-0.5'>
+              <p className='text-blackRaspberry-900'>{convertDuration(new Date(props.data.duration_ms))}</p>
+            </div>
             <Image
               src={props.data.album.images[0].url}
               alt={`Album cover for ${props.data.album.name}`}
@@ -45,18 +22,14 @@ export default function SpotifyStatCard(props: { type: 'track' | 'artist', data:
               className='aspect-square object-cover'
             ></Image>
           </div>
-          <div>
-            <p className='text-blackRaspberry font-medium text-2xl truncate'><a href={props.data.external_urls.spotify} target='_blank' rel='noreferrer' className='hover:text-green-dark transition-colors'>{props.data.name}</a></p>
-            <p className='text-blackRaspberry/75 font-medium text-lg truncate'>{artists}</p>
-          </div>
-          <div className='divide-y-2 border-y-2'>
-            <p className='text-blackRaspberry text-lg'><span className='font-medium'>Released:</span> {format(new Date(props.data.album.release_date), 'MM/dd/yyyy')}</p>
-            <p className='text-blackRaspberry text-lg'><span className='font-medium'>Duration:</span> {convertDuration(new Date(props.data.duration_ms))}</p>
+          <div className='max-w-full'>
+            <p className='font-medium text-lg truncate'><a href={props.data.external_urls.spotify} target='_blank' rel='noreferrer' className='hover:text-green-light transition-colors'>{props.data.name}</a></p>
+            <p className='text-white/80 text-sm truncate'>{artists}</p>
           </div>
         </div>
     )
   }
-  else if (props.type == 'artist') {
+  else {
     let genres = [];
     props.data.genres.forEach(genre => {
       genres.push(' ' + genre)

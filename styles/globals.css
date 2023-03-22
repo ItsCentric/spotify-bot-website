@@ -5,7 +5,7 @@
 
 @layer base {
   html {
-    @apply bg-blackRaspberry
+    @apply bg-blackRaspberry-900;
   }
 }
 

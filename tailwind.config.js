@@ -18,7 +18,11 @@ module.exports = {
           light: '#05F558',
           dark: '#0CA842'
         },
-        blackRaspberry: '#201926',
+        blackRaspberry: {
+          900: '#201926',
+          600: '#40314C',
+          200: '#503E5F',
+        },
       },
       fontFamily: {
         sans: ['Rubik', ...defaultTheme.fontFamily.sans],
