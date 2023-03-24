@@ -85,7 +85,7 @@ export const authOptions: NextAuthOptions = {
           { userId: new ObjectId(user.id) },
           {
             $set: {
-              access_token: account.access_token,
+              access_token: encryption(account.access_token),
               refresh_token: encryption(account.refresh_token),
               expires_at: Date.now() + 3600,
             },

@@ -39,7 +39,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       .findOne({ access_token: accessToken })
       .then((res) => (encryptedRefreshToken = res.refresh_token))
       .catch((err) => console.log(err));
-    newAccessToken = await refreshAccessToken(decryption(encryptedRefreshToken));
+    newAccessToken = await refreshAccessToken(decryption(encryptedRefreshToken.encryptedData, encryptedRefreshToken.iv, encryptedRefreshToken.authTag));
     accessToken = newAccessToken.accessToken;
     session.accessTokenExpires = newAccessToken.accessTokenExpires;
     await persistRefreshToken(newAccessToken.refreshToken, accessToken);
