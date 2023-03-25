@@ -5,8 +5,9 @@ type AccessToken = {
 }
 
 type EncryptedContent = {
-    iv: BinaryData;
-    content: BinaryData;
+    iv: Buffer;
+    encryptedData: string;
+    authTag: Buffer;
 }
 
 type TopItems = {
