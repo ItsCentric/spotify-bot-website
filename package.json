@@ -16,6 +16,7 @@
     "date-fns": "^2.29.3",
     "dotenv": "^16.0.3",
     "mongodb": "^4.9.0",
+    "mongoose": "^7.0.3",
     "next": "^13.1.6",
     "next-auth": "^4.10.3",
     "nodemailer": "^6.7.8",
