@@ -1,13 +1,13 @@
 import { createDecipheriv } from 'crypto';
 
-export default function decryption(data: any) {
+export default function decryption(encryptedData: string, iv: Buffer, authTag: Buffer) {
   try {
-    const decipher = createDecipheriv('aes-256-ocb', Buffer.from(process.env.ENCRYPT_KEY), data.iv.buffer);
-    const decrypted = Buffer.concat([
-      decipher.update(data.content.buffer, 'base64'),
-      decipher.final(),
-    ]);
-    return decrypted.toString();
+    const key = Buffer.from(process.env.ENCRYPT_KEY, 'hex');
+    const decipher = createDecipheriv('aes-256-ocb', key, iv, { authTagLength: 16 });
+    decipher.setAuthTag(authTag);
+    const decryptedData = decipher.update(encryptedData, 'hex', 'utf8') + decipher.final('utf8');
+
+    return decryptedData;
   } catch (error) {
     throw error;
   }
