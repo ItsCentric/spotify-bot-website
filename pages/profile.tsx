@@ -21,6 +21,8 @@ import type {
   TopItems,
   TrackMood,
 } from '../types/types';
+import { connect } from 'mongoose';
+import Account from '../models/Account';
 
 export const SessionContext = createContext<Session>(null);
 export const getServerSideProps: GetServerSideProps = async (context) => {
@@ -30,16 +32,17 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const userInfo = await fetchSpotifyUser(accessToken);
 
   if (new Date().toISOString() > new Date(session.accessTokenExpires).toISOString()) {
-    const connection = await connectionPromise;
-    const accounts = connection.db('test').collection('accounts');
-    let encryptedRefreshToken: EncryptedContent;
-    let newAccessToken: AccessToken;
+    connect(process.env.MONGODB_URI);
 
-    await accounts
-      .findOne({ access_token: accessToken })
-      .then((res) => (encryptedRefreshToken = res.refresh_token))
-      .catch((err) => console.log(err));
-    newAccessToken = await refreshAccessToken(decryption(encryptedRefreshToken.encryptedData, encryptedRefreshToken.iv, encryptedRefreshToken.authTag));
+    const account = await Account.findOne({ access_token: accessToken });
+    const encryptedRefreshToken = account.refresh_token;
+    const newAccessToken = await refreshAccessToken(
+      decryption(
+        encryptedRefreshToken.encryptedData,
+        encryptedRefreshToken.iv,
+        encryptedRefreshToken.authTag
+      )
+    );
     accessToken = newAccessToken.accessToken;
     session.accessTokenExpires = newAccessToken.accessTokenExpires;
     await persistRefreshToken(newAccessToken.refreshToken, accessToken);
@@ -147,6 +150,7 @@ export default function Profile(props: { spotifyData: SpotifyData }) {
                 <Sidebar setStatType={setStatType} />
                 <SpotifyStatsSection statType={statType} />
               </div>
+              <div></div>
             </SpotifyDataContext.Provider>
           </SessionContext.Provider>
         </div>
@@ -222,13 +226,10 @@ async function fetchSpotifyUser(token: string) {
 
 async function persistRefreshToken(refreshToken: string, accessToken: string) {
   const encryptedRefreshToken = encryption(refreshToken);
-  const connection = await connectionPromise;
-  const accounts = connection.db('test').collection('accounts');
 
-  accounts.updateOne(
-    { accessToken: accessToken },
-    { $set: { refreshToken: encryptedRefreshToken } }
-  );
+  const accountToUpdate = await Account.findOne({ accessToken: accessToken });
+  accountToUpdate.refresh_token = encryptedRefreshToken;
+  accountToUpdate.save();
 }
 
 async function getRecentTracks(accessToken: string) {
