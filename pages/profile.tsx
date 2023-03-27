@@ -9,10 +9,11 @@ import type { Session } from 'next-auth';
 import decryption from '../lib/decryption';
 import encryption from '../lib/encryption';
 import SpotifyStatsSection from '../components/SpotifyStatsSection';
-import connectionPromise from '../lib/mongodb';
 import { createContext, useEffect, useState } from 'react';
 import Sidebar from '../components/Sidebar';
 import { getSession } from 'next-auth/react';
+import Account from '../models/Account';
+import connection from '../lib/mongooseConnect';
 import type {
   AccessToken,
   EncryptedContent,
@@ -21,8 +22,6 @@ import type {
   TopItems,
   TrackMood,
 } from '../types/types';
-import { connect } from 'mongoose';
-import Account from '../models/Account';
 
 export const SessionContext = createContext<Session>(null);
 export const getServerSideProps: GetServerSideProps = async (context) => {
@@ -30,10 +29,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const session: Session = await unstable_getServerSession(context.req, context.res, authOptions);
   let accessToken = session.accessToken;
   const userInfo = await fetchSpotifyUser(accessToken);
+  await connection();
 
   if (new Date().toISOString() > new Date(session.accessTokenExpires).toISOString()) {
-    connect(process.env.MONGODB_URI);
-
     const account = await Account.findOne({ access_token: accessToken });
     const encryptedRefreshToken = account.refresh_token;
     const newAccessToken = await refreshAccessToken(
