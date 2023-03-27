@@ -5,8 +5,8 @@ import axios from 'axios';
 import { MongoDBAdapter } from '@next-auth/mongodb-adapter';
 import clientPromise from '../../../lib/mongodb';
 import encryption from '../../../lib/encryption';
-import { connect, connection } from 'mongoose';
 import Account from '../../../models/Account';
+import connection from '../../../lib/mongooseConnect';
 
 /**
  * Takes a token, and returns a new token with updated
@@ -71,7 +71,7 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async jwt({ token, user, account }) {
-      connect(process.env.MONGODB_URI);
+      await connection();
       if (account) {
         token.accessToken = account.access_token;
       }
@@ -85,7 +85,6 @@ export const authOptions: NextAuthOptions = {
           encryption(account.refresh_token)
         );
         accountToUpdate.save();
-        connection.close();
 
         return {
           accessToken: account.access_token,
