@@ -293,7 +293,7 @@ function recentTracksMood(tracks: SpotifyApi.AudioFeaturesObject[]) {
       value: 0,
     },
     array: [1, 1, 1, 1],
-    total: tracks.length,
+    total: 0,
   };
   const filteredTracks = tracks.filter((track) => {
     if (track) return track;
@@ -302,6 +302,7 @@ function recentTracksMood(tracks: SpotifyApi.AudioFeaturesObject[]) {
   filteredTracks.forEach((track) => {
     recentTrackFeatures[determineTrackMood(track)] += 1;
   });
+  recentTrackFeatures.total = filteredTracks.length;
   recentTrackFeatures.array = [
     recentTrackFeatures.danceability,
     recentTrackFeatures.energy,
