@@ -39,7 +39,13 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       .findOne({ access_token: accessToken })
       .then((res) => (encryptedRefreshToken = res.refresh_token))
       .catch((err) => console.log(err));
-    newAccessToken = await refreshAccessToken(decryption(encryptedRefreshToken.encryptedData, encryptedRefreshToken.iv, encryptedRefreshToken.authTag));
+    newAccessToken = await refreshAccessToken(
+      decryption(
+        encryptedRefreshToken.encryptedData,
+        encryptedRefreshToken.iv,
+        encryptedRefreshToken.authTag
+      )
+    );
     accessToken = newAccessToken.accessToken;
     session.accessTokenExpires = newAccessToken.accessTokenExpires;
     await persistRefreshToken(newAccessToken.refreshToken, accessToken);
@@ -289,8 +295,11 @@ function recentTracksMood(tracks: SpotifyApi.AudioFeaturesObject[]) {
     array: [1, 1, 1, 1],
     total: tracks.length,
   };
+  const filteredTracks = tracks.filter((track) => {
+    if (track) return track;
+  });
 
-  tracks.forEach((track) => {
+  filteredTracks.forEach((track) => {
     recentTrackFeatures[determineTrackMood(track)] += 1;
   });
   recentTrackFeatures.array = [
