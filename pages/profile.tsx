@@ -9,10 +9,11 @@ import type { Session } from 'next-auth';
 import decryption from '../lib/decryption';
 import encryption from '../lib/encryption';
 import SpotifyStatsSection from '../components/SpotifyStatsSection';
-import connectionPromise from '../lib/mongodb';
 import { createContext, useEffect, useState } from 'react';
 import Sidebar from '../components/Sidebar';
 import { getSession } from 'next-auth/react';
+import Account from '../models/Account';
+import connection from '../lib/mongooseConnect';
 import type {
   AccessToken,
   EncryptedContent,
@@ -28,18 +29,12 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const session: Session = await unstable_getServerSession(context.req, context.res, authOptions);
   let accessToken = session.accessToken;
   const userInfo = await fetchSpotifyUser(accessToken);
+  await connection();
 
   if (new Date().toISOString() > new Date(session.accessTokenExpires).toISOString()) {
-    const connection = await connectionPromise;
-    const accounts = connection.db('test').collection('accounts');
-    let encryptedRefreshToken: EncryptedContent;
-    let newAccessToken: AccessToken;
-
-    await accounts
-      .findOne({ access_token: accessToken })
-      .then((res) => (encryptedRefreshToken = res.refresh_token))
-      .catch((err) => console.log(err));
-    newAccessToken = await refreshAccessToken(
+    const account = await Account.findOne({ access_token: accessToken });
+    const encryptedRefreshToken = account.refresh_token;
+    const newAccessToken = await refreshAccessToken(
       decryption(
         encryptedRefreshToken.encryptedData,
         encryptedRefreshToken.iv,
@@ -153,6 +148,7 @@ export default function Profile(props: { spotifyData: SpotifyData }) {
                 <Sidebar setStatType={setStatType} />
                 <SpotifyStatsSection statType={statType} />
               </div>
+              <div></div>
             </SpotifyDataContext.Provider>
           </SessionContext.Provider>
         </div>
@@ -228,13 +224,10 @@ async function fetchSpotifyUser(token: string) {
 
 async function persistRefreshToken(refreshToken: string, accessToken: string) {
   const encryptedRefreshToken = encryption(refreshToken);
-  const connection = await connectionPromise;
-  const accounts = connection.db('test').collection('accounts');
 
-  accounts.updateOne(
-    { accessToken: accessToken },
-    { $set: { refreshToken: encryptedRefreshToken } }
-  );
+  const accountToUpdate = await Account.findOne({ accessToken: accessToken });
+  accountToUpdate.refresh_token = encryptedRefreshToken;
+  accountToUpdate.save();
 }
 
 async function getRecentTracks(accessToken: string) {
