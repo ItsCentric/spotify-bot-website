@@ -1,10 +1,14 @@
 import { useEffect, useState } from 'react';
 import FormInput from './FormInput';
 import countries, { languagesAll } from 'countries-list';
+import { SubMenuProgress } from './SettingsModal';
 
-export default function GeneralSubMenu() {
+export default function GeneralSubMenu(props: {
+  progress: { value: SubMenuProgress; setValue: Function };
+}) {
   const [time, setTime] = useState(10);
   const [activatedTimer, setActivatedTimer] = useState(false);
+  const formProgress = props.progress.value.general;
   const countryNames = Object.values(countries.countries).map((country, index) => {
     return {
       [Object.keys(countries.countries)[index]]: country.name,
@@ -21,7 +25,16 @@ export default function GeneralSubMenu() {
   for (const key in languagesAll) {
     languages.push({ [key]: languagesAll[key].native });
   }
-  console.log(languages);
+  function handleInputChange(event) {
+    const target = event.target;
+    const value = target.value;
+    const name = target.name;
+
+    props.progress.setValue({
+      ...props.progress.value,
+      general: { ...props.progress.value.general, [name]: value },
+    });
+  }
 
   useEffect(() => {
     let timer: NodeJS.Timer;
@@ -34,8 +47,10 @@ export default function GeneralSubMenu() {
     }
     if (time === 0) setActivatedTimer(false);
 
-    return () => clearInterval(timer);
-  }, [activatedTimer, time]);
+    return () => {
+      clearInterval(timer);
+    };
+  }, [activatedTimer, time, props.progress]);
 
   return (
     <>
@@ -48,7 +63,9 @@ export default function GeneralSubMenu() {
               label='Language'
               type='select'
               selectOptions={languages}
-              default='en'>
+              default={formProgress.language}
+              value={formProgress.language}
+              onChange={handleInputChange}>
               Set your preferred language. In future versions this will localize the website in this
               language.
             </FormInput>
@@ -57,12 +74,13 @@ export default function GeneralSubMenu() {
               label='Country'
               type='select'
               selectOptions={sortedCountryNames}
-              default='US'>
+              default={formProgress.country}
+              value={formProgress.country}
+              onChange={handleInputChange}>
               Set your country. This will check to make sure a song is available in this country.
             </FormInput>
           </div>
         </div>
-        <div></div>
       </form>
       <div>
         <h3 className='text-xl font-semibold mb-2'>Account</h3>
