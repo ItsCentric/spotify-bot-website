@@ -1,6 +1,31 @@
-import { Schema, Types, model } from 'mongoose';
+import { Model, Schema, Types, model, models } from 'mongoose';
 
-const userSchema = new Schema({
+export interface IUser {
+  name: string;
+  email: string;
+  emailVerified: boolean;
+  image: string;
+  accounts: Types.ObjectId[];
+  preferences: {
+    privacy: {
+      publicProfile: boolean;
+      publicTopTracks: boolean;
+      publicTopArtists: boolean;
+      publicNowPlaying: boolean;
+      whitelist: Types.ObjectId[];
+      blacklist: Types.ObjectId[];
+    };
+    defaults: {
+      timeRange: {
+        topTracks: 'short_term' | 'medium_term' | 'long_term';
+        topArtists: 'short_term' | 'medium_term' | 'long_term';
+      };
+    };
+    language: string;
+  };
+}
+
+const userSchema = new Schema<IUser>({
   name: {
     type: String,
     required: true,
@@ -53,4 +78,6 @@ const userSchema = new Schema({
   },
 });
 
-export default model('User', userSchema);
+const User = (models.User as Model<IUser>) ?? model<IUser>('User', userSchema);
+
+export default User;
