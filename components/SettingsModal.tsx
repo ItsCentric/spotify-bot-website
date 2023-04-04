@@ -14,6 +14,7 @@ export default function SettingsModal() {
   const [subMenuProgress, setSubMenuProgress] = useState<Preferences>(null);
   const initialSubMenuProgress = useRef(subMenuProgress);
   const [formSubmitted, setFormSubmitted] = useState<boolean>(false);
+  const [currentSubMenu, setCurrentSubMenu] = useState<number>(0);
   const subMenuArray = [
     <GeneralSubMenu key={1} progress={{ value: subMenuProgress, setValue: setSubMenuProgress }} />,
     <SpotifySubMenu key={2} progress={{ value: subMenuProgress, setValue: setSubMenuProgress }} />,
@@ -84,19 +85,26 @@ export default function SettingsModal() {
           restricted={
             JSON.stringify(subMenuProgress) !== JSON.stringify(initialSubMenuProgress.current)
           }>
-          <div className='grid grid-cols-[1fr,_3fr] gap-4 flex-1'>
+          <div className='grid grid-cols-[1fr,_3fr] gap-4 flex-1 min-h-0'>
             <div className='bg-blackRaspberry-600 rounded-lg'>
-              <ul className='flex flex-col items-center p-2'>
+              <ul className='flex flex-col items-center p-2 gap-1'>
                 {subMenuArray.map((subMenu, index) => {
                   return (
-                    <ListSelectElement key={index} handleClick={() => setSubMenu(index)}>
+                    <ListSelectElement
+                      key={index}
+                      handleClick={() => {
+                        setSubMenu(index);
+                        setCurrentSubMenu(index);
+                      }}
+                      currentSubMenu={currentSubMenu}
+                      index={index}>
                       {subMenu.type.name.split('SubMenu')[0]}
                     </ListSelectElement>
                   );
                 })}
               </ul>
             </div>
-            <div className='bg-blackRaspberry-600 rounded-lg px-4 py-2'>
+            <div className='bg-blackRaspberry-600 rounded-lg px-4 py-2 h-0 min-h-full overflow-y-auto'>
               {subMenuArray[subMenu]}
             </div>
           </div>

@@ -21,7 +21,7 @@ export default function FormInput(props: {
           <select
             name={props.id}
             id={props.id}
-            className='block bg-blackRaspberry-200 rounded-md mb-1'
+            className='block bg-blackRaspberry-200 rounded-md mb-1 p-1'
             value={props.value}
             onChange={props.onChange}>
             {props.selectOptions?.map((option, index) => {
