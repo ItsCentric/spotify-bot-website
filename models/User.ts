@@ -1,12 +1,14 @@
+import { countries, languagesAll } from 'countries-list';
 import { Model, Schema, Types, model, models } from 'mongoose';
 
-export interface IUser {
-  name: string;
-  email: string;
-  emailVerified: boolean;
-  image: string;
-  accounts: Types.ObjectId[];
-  preferences: {
+export type Preferences = {
+  general: {
+    locale: {
+      language: string;
+      country: string;
+    };
+  };
+  spotify: {
     privacy: {
       publicProfile: boolean;
       publicTopTracks: boolean;
@@ -21,8 +23,16 @@ export interface IUser {
         topArtists: 'short_term' | 'medium_term' | 'long_term';
       };
     };
-    language: string;
   };
+};
+
+export interface IUser {
+  name: string;
+  email: string;
+  emailVerified: boolean;
+  image: string;
+  accounts: Types.ObjectId[];
+  preferences: Preferences;
 }
 
 const userSchema = new Schema<IUser>({
@@ -44,35 +54,47 @@ const userSchema = new Schema<IUser>({
   ],
   preferences: {
     type: {
-      privacy: {
-        publicProfile: Boolean,
-        publicTopTracks: Boolean,
-        publicTopArtists: Boolean,
-        publicNowPlaying: Boolean,
-        whitelist: {
-          type: [Types.ObjectId],
-          ref: 'User',
-        },
-        blacklist: {
-          type: [Types.ObjectId],
-          ref: 'User',
-        },
-      },
-      defaults: {
-        timeRange: {
-          topTracks: {
+      general: {
+        locale: {
+          language: {
             type: String,
-            enum: ['short_term', 'medium_term', 'long_term'],
+            enum: Object.keys(languagesAll),
+            required: true,
           },
-          topArtists: {
+          country: {
             type: String,
-            enum: ['short_term', 'medium_term', 'long_term'],
+            enum: Object.keys(countries),
+            required: true,
           },
         },
       },
-      language: {
-        type: String,
-        required: true,
+      spotify: {
+        privacy: {
+          publicProfile: Boolean,
+          publicTopTracks: Boolean,
+          publicTopArtists: Boolean,
+          publicNowPlaying: Boolean,
+          whitelist: {
+            type: [Types.ObjectId],
+            ref: 'User',
+          },
+          blacklist: {
+            type: [Types.ObjectId],
+            ref: 'User',
+          },
+        },
+        defaults: {
+          timeRange: {
+            topTracks: {
+              type: String,
+              enum: ['short_term', 'medium_term', 'long_term'],
+            },
+            topArtists: {
+              type: String,
+              enum: ['short_term', 'medium_term', 'long_term'],
+            },
+          },
+        },
       },
     },
   },

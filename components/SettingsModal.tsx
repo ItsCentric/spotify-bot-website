@@ -4,47 +4,61 @@ import { useContext, useEffect, useRef, useState } from 'react';
 import ListSelectElement from './ListSelectElement';
 import SpotifySubMenu from './SpotifySubMenu';
 import GeneralSubMenu from './GeneralSubMenu';
+import axios from 'axios';
+import { Preferences } from '../models/User';
 
-export type SubMenuProgress = {
-  general: {
-    language?: string;
-    country?: string;
-  };
-  spotify: {
-    'spotify-profile-privacy'?: boolean;
-    'spotify-toptracks-privacy'?: boolean;
-    'spotify-topartists-privacy'?: boolean;
-    'spotify-nowplaying-privacy'?: boolean;
-  };
-};
 export default function SettingsModal() {
   const modal = useContext(ModalContext);
   const [unsavedChanges, setUnsavedChanges] = useState<JSX.Element>(null);
   const [subMenu, setSubMenu] = useState<number>(0);
-  const [subMenuProgress, setSubMenuProgress] = useState<SubMenuProgress>({
-    general: { language: 'en', country: 'US' },
-    spotify: {
-      'spotify-nowplaying-privacy': false,
-      'spotify-profile-privacy': false,
-      'spotify-topartists-privacy': false,
-      'spotify-toptracks-privacy': false,
-    },
-  });
+  const [subMenuProgress, setSubMenuProgress] = useState<Preferences>(null);
   const initialSubMenuProgress = useRef(subMenuProgress);
+  const [formSubmitted, setFormSubmitted] = useState<boolean>(false);
   const subMenuArray = [
     <GeneralSubMenu key={1} progress={{ value: subMenuProgress, setValue: setSubMenuProgress }} />,
     <SpotifySubMenu key={2} progress={{ value: subMenuProgress, setValue: setSubMenuProgress }} />,
   ];
 
   useEffect(() => {
-    if (JSON.stringify(subMenuProgress) !== JSON.stringify(initialSubMenuProgress.current)) {
+    async function fetchPreferences() {
+      try {
+        const { data } = await axios.get('/api/user/preferences');
+        setSubMenuProgress(data.preferences);
+        initialSubMenuProgress.current = data.preferences;
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    fetchPreferences();
+  }, []);
+  useEffect(() => {
+    const isInitial =
+      JSON.stringify(subMenuProgress) === JSON.stringify(initialSubMenuProgress.current);
+    async function handleFormSubmit() {
+      if (isInitial) throw new Error('New preferences can not be the same as old ones');
+      try {
+        await axios.post('/api/user/preferences', subMenuProgress, {
+          headers: { 'Content-Type': 'application/json' },
+        });
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    if (formSubmitted) {
+      handleFormSubmit();
+      initialSubMenuProgress.current = subMenuProgress;
+      setUnsavedChanges(null);
+      setFormSubmitted(false);
+    }
+    if (!isInitial) {
       setUnsavedChanges(
         <div className='absolute bottom-0 w-full p-4 flex justify-center gap-8 z-[9999] bg-blackRaspberry-600'>
           <p className='text-xl'>You have unsaved changes</p>
           <div className='space-x-2'>
             <button
               className='py-1 px-2 bg-green-light hover:bg-green-dark rounded-lg transition-colors'
-              onClick={() => console.log('form submitted!', subMenuProgress)}>
+              onClick={() => setFormSubmitted(true)}>
               Save
             </button>
             <button
@@ -58,7 +72,7 @@ export default function SettingsModal() {
     } else {
       setUnsavedChanges(null);
     }
-  }, [subMenuProgress]);
+  }, [formSubmitted, subMenuProgress]);
 
   if (modal.value === 0) {
     return (

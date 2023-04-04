@@ -1,8 +1,8 @@
+import { Preferences } from '../models/User';
 import FormInput from './FormInput';
-import { SubMenuProgress } from './SettingsModal';
 
 export default function SpotifySubMenu(props: {
-  progress: { value: SubMenuProgress; setValue: Function };
+  progress: { value: Preferences; setValue: Function };
 }) {
   const formProgress = props.progress.value.spotify;
   function handleInputChange(event) {
@@ -12,7 +12,7 @@ export default function SpotifySubMenu(props: {
 
     props.progress.setValue({
       ...props.progress.value,
-      spotify: { ...props.progress.value.spotify, [name]: value },
+      spotify: { privacy: { ...props.progress.value.spotify, [name]: value } },
     });
   }
 
@@ -21,59 +21,49 @@ export default function SpotifySubMenu(props: {
       <h3 className='text-xl font-semibold mb-2'>Privacy</h3>
       <div className='space-y-2'>
         <FormInput
-          id='spotify-profile-privacy'
+          id='publicProfile'
           label='Profile Privacy'
           type='checkbox'
-          checked={formProgress['spotify-profile-privacy']}
-          value={formProgress['spotify-profile-privacy']}
+          checked={!formProgress.privacy.publicProfile}
+          value={!formProgress.privacy.publicProfile}
           onChange={handleInputChange}>
           If true, your Spotify profile will be private. This means only those that you have
           whitelisted will be able to see your profile.
         </FormInput>
         <FormInput
-          id='spotify-toptracks-privacy'
+          id='publicTopTracks'
           label='Top Tracks Privacy'
           type='checkbox'
-          checked={formProgress['spotify-toptracks-privacy']}
-          value={formProgress['spotify-toptracks-privacy']}
+          checked={!formProgress.privacy.publicTopTracks}
+          value={!formProgress.privacy.publicTopTracks}
           onChange={handleInputChange}>
           If true, your Spotify top tracks will be private. This means only those that you have
           whitelisted will be able to see your top tracks.
         </FormInput>
         <FormInput
-          id='spotify-topartists-privacy'
+          id='publicTopArtists'
           label='Top Artists Privacy'
           type='checkbox'
-          checked={formProgress['spotify-topartists-privacy']}
-          value={formProgress['spotify-topartists-privacy']}
+          checked={!formProgress.privacy.publicTopArtists}
+          value={!formProgress.privacy.publicTopArtists}
           onChange={handleInputChange}>
           If true, your Spotify top artists will be private. This means only those that you have
           whitelisted will be able to see your top artists.
         </FormInput>
         <FormInput
-          id='spotify-nowplaying-privacy'
+          id='publicNowPlaying'
           label='Current Track Privacy'
           type='checkbox'
-          checked={formProgress['spotify-nowplaying-privacy']}
-          value={formProgress['spotify-nowplaying-privacy']}
+          checked={!formProgress.privacy.publicNowPlaying}
+          value={!formProgress.privacy.publicNowPlaying}
           onChange={handleInputChange}>
           If true, your Spotify current track will be private. This means only those that you have
           whitelisted will be able to see your current track.
         </FormInput>
-        <FormInput
-          id='spotify-whitelist'
-          label='Whitelist'
-          type='textarea'
-          disabled={true}
-          stacked={true}>
+        <FormInput id='whitelist' label='Whitelist' type='textarea' disabled={true} stacked={true}>
           Will be implemented in the future.
         </FormInput>
-        <FormInput
-          id='spotify-blacklist'
-          label='Blacklist'
-          type='textarea'
-          disabled={true}
-          stacked={true}>
+        <FormInput id='blacklist' label='Blacklist' type='textarea' disabled={true} stacked={true}>
           Will be implemented in the future.
         </FormInput>
       </div>

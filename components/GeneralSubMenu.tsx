@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react';
 import FormInput from './FormInput';
 import countries, { languagesAll } from 'countries-list';
-import { SubMenuProgress } from './SettingsModal';
+import { Preferences } from '../models/User';
 
 export default function GeneralSubMenu(props: {
-  progress: { value: SubMenuProgress; setValue: Function };
+  progress: { value: Preferences; setValue: Function };
 }) {
   const [time, setTime] = useState(10);
   const [activatedTimer, setActivatedTimer] = useState(false);
-  const formProgress = props.progress.value.general;
+  const formProgress = props.progress.value?.general;
   const countryNames = Object.values(countries.countries).map((country, index) => {
     return {
       [Object.keys(countries.countries)[index]]: country.name,
@@ -32,7 +32,7 @@ export default function GeneralSubMenu(props: {
 
     props.progress.setValue({
       ...props.progress.value,
-      general: { ...props.progress.value.general, [name]: value },
+      general: { locale: { ...props.progress.value.general.locale, [name]: value } },
     });
   }
 
@@ -63,8 +63,8 @@ export default function GeneralSubMenu(props: {
               label='Language'
               type='select'
               selectOptions={languages}
-              default={formProgress.language}
-              value={formProgress.language}
+              default={formProgress.locale.language}
+              value={formProgress.locale.language}
               onChange={handleInputChange}>
               Set your preferred language. In future versions this will localize the website in this
               language.
@@ -74,8 +74,8 @@ export default function GeneralSubMenu(props: {
               label='Country'
               type='select'
               selectOptions={sortedCountryNames}
-              default={formProgress.country}
-              value={formProgress.country}
+              default={formProgress.locale.country}
+              value={formProgress.locale.country}
               onChange={handleInputChange}>
               Set your country. This will check to make sure a song is available in this country.
             </FormInput>
