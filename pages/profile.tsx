@@ -14,14 +14,8 @@ import Sidebar from '../components/Sidebar';
 import { getSession } from 'next-auth/react';
 import Account from '../models/Account';
 import connection from '../lib/mongooseConnect';
-import type {
-  AccessToken,
-  EncryptedContent,
-  RecentTracksData,
-  SpotifyData,
-  TopItems,
-  TrackMood,
-} from '../types/types';
+import type { RecentTracksData, SpotifyData, TopItems, TrackMood } from '../types/types';
+import SettingsModal from '../components/SettingsModal';
 
 export const SessionContext = createContext<Session>(null);
 export const getServerSideProps: GetServerSideProps = async (context) => {
@@ -100,6 +94,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 };
 
 export const SpotifyDataContext = createContext<SpotifyData>(null);
+export const ModalContext = createContext<{ value: number; setValue: Function } | null>(null);
 export default function Profile(props: { spotifyData: SpotifyData }) {
   /* 
     0: top 3 tracks and top 3 artists
@@ -107,6 +102,7 @@ export default function Profile(props: { spotifyData: SpotifyData }) {
     2: top 10 artists
   */
   const [statType, setStatType] = useState(0);
+  const [modal, setModal] = useState<number>(null);
   const topItems = props.spotifyData.topItems;
   const userInfo = props.spotifyData.userInfo;
   const [session, setSession] = useState<Session>(null);
@@ -132,7 +128,7 @@ export default function Profile(props: { spotifyData: SpotifyData }) {
   if (!session || !spotifyData) return <div></div>;
   else {
     return (
-      <div>
+      <>
         <Head>
           <title>Music Wizard | Profile</title>
           <meta name='robots' content='noindex' key='robots' />
@@ -140,18 +136,20 @@ export default function Profile(props: { spotifyData: SpotifyData }) {
           <link rel='canonical' href='https://musicwizard.vercel.app/' key='canonical' />
         </Head>
 
-        <div className='lg:min-h-screen flex flex-col'>
-          <SiteNav></SiteNav>
-          <SessionContext.Provider value={session}>
-            <SpotifyDataContext.Provider value={spotifyData}>
-              <div className='p-4 block lg:grid lg:grid-cols-[auto,_3fr] lg:gap-12 lg:flex-1'>
-                <Sidebar setStatType={setStatType} />
-                <SpotifyStatsSection statType={statType} />
-              </div>
-              <div></div>
-            </SpotifyDataContext.Provider>
-          </SessionContext.Provider>
-        </div>
+        <ModalContext.Provider value={{ value: modal, setValue: setModal }}>
+          <SettingsModal />
+          <div className='lg:min-h-screen flex flex-col'>
+            <SiteNav></SiteNav>
+            <SessionContext.Provider value={session}>
+              <SpotifyDataContext.Provider value={spotifyData}>
+                <div className='p-4 block lg:grid lg:grid-cols-[auto,_3fr] lg:gap-12 lg:flex-1'>
+                  <Sidebar setStatType={setStatType} />
+                  <SpotifyStatsSection statType={statType} />
+                </div>
+              </SpotifyDataContext.Provider>
+            </SessionContext.Provider>
+          </div>
+        </ModalContext.Provider>
 
         <div className='flex items-center justify-center mb-4'>
           <p className='m-0 mr-3 font-medium text-2xl'>Powered by</p>
@@ -161,7 +159,7 @@ export default function Profile(props: { spotifyData: SpotifyData }) {
             height={60}
             alt='spotify logo'></Image>
         </div>
-      </div>
+      </>
     );
   }
 }
