@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import FormInput from './FormInput';
 import countries, { languagesAll } from 'countries-list';
 import { Preferences } from '../models/User';
+import handleInputChange from '../lib/handleInputChange';
 
 export default function GeneralSubMenu(props: {
   progress: { value: Preferences; setValue: Function };
@@ -9,6 +10,7 @@ export default function GeneralSubMenu(props: {
   const [time, setTime] = useState(10);
   const [activatedTimer, setActivatedTimer] = useState(false);
   const formProgress = props.progress.value?.general;
+  const handleInputChangeCallback = useCallback(handleInputChange, []);
   const countryNames = Object.values(countries.countries).map((country, index) => {
     return {
       [Object.keys(countries.countries)[index]]: country.name,
@@ -24,16 +26,6 @@ export default function GeneralSubMenu(props: {
   const languages = [];
   for (const key in languagesAll) {
     languages.push({ [key]: languagesAll[key].native });
-  }
-  function handleInputChange(event) {
-    const target = event.target;
-    const value = target.value;
-    const name = target.name;
-
-    props.progress.setValue({
-      ...props.progress.value,
-      general: { locale: { ...props.progress.value.general.locale, [name]: value } },
-    });
   }
 
   useEffect(() => {
@@ -59,24 +51,24 @@ export default function GeneralSubMenu(props: {
           <h3 className='text-xl font-semibold mb-2'>Locale</h3>
           <div className='space-y-2'>
             <FormInput
-              id='language'
+              id='general-locale-language'
               label='Language'
               type='select'
               selectOptions={languages}
               default={formProgress.locale.language}
               value={formProgress.locale.language}
-              onChange={handleInputChange}>
+              onChange={(event) => handleInputChangeCallback(event, props.progress)}>
               Set your preferred language. In future versions this will localize the website in this
               language.
             </FormInput>
             <FormInput
-              id='country'
+              id='general-locale-country'
               label='Country'
               type='select'
               selectOptions={sortedCountryNames}
               default={formProgress.locale.country}
               value={formProgress.locale.country}
-              onChange={handleInputChange}>
+              onChange={(event) => handleInputChangeCallback(event, props.progress)}>
               Set your country. This will check to make sure a song is available in this country.
             </FormInput>
           </div>

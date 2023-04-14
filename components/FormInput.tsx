@@ -27,7 +27,7 @@ export default function FormInput(props: {
             {props.selectOptions?.map((option, index) => {
               const key = Object.keys(option)[0];
               return (
-                <option key={index} value={key} selected={key === props.default}>
+                <option key={index} value={key}>
                   {Object.values(option)[0]}
                 </option>
               );

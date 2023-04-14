@@ -10,10 +10,10 @@ export type Preferences = {
   };
   spotify: {
     privacy: {
-      publicProfile: boolean;
-      publicTopTracks: boolean;
-      publicTopArtists: boolean;
-      publicNowPlaying: boolean;
+      privateProfile: boolean;
+      privateTopTracks: boolean;
+      privateTopArtists: boolean;
+      privateNowPlaying: boolean;
       whitelist: Types.ObjectId[];
       blacklist: Types.ObjectId[];
     };
@@ -70,17 +70,31 @@ const userSchema = new Schema<IUser>({
       },
       spotify: {
         privacy: {
-          publicProfile: Boolean,
-          publicTopTracks: Boolean,
-          publicTopArtists: Boolean,
-          publicNowPlaying: Boolean,
+          privateProfile: {
+            type: Boolean,
+            required: true,
+          },
+          privateTopTracks: {
+            type: Boolean,
+            required: true,
+          },
+          privateTopArtists: {
+            type: Boolean,
+            required: true,
+          },
+          privateNowPlaying: {
+            type: Boolean,
+            required: true,
+          },
           whitelist: {
             type: [Types.ObjectId],
             ref: 'User',
+            required: true,
           },
           blacklist: {
             type: [Types.ObjectId],
             ref: 'User',
+            required: true,
           },
         },
         defaults: {
@@ -88,10 +102,12 @@ const userSchema = new Schema<IUser>({
             topTracks: {
               type: String,
               enum: ['short_term', 'medium_term', 'long_term'],
+              required: true,
             },
             topArtists: {
               type: String,
               enum: ['short_term', 'medium_term', 'long_term'],
+              required: true,
             },
           },
         },
