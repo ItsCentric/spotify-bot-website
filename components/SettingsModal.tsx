@@ -12,7 +12,7 @@ export default function SettingsModal() {
   const [unsavedChanges, setUnsavedChanges] = useState<JSX.Element>(null);
   const [subMenu, setSubMenu] = useState<number>(0);
   const [subMenuProgress, setSubMenuProgress] = useState<Preferences>(null);
-  const initialSubMenuProgress = useRef(subMenuProgress);
+  const initialSubMenuProgress = useRef(null);
   const [formSubmitted, setFormSubmitted] = useState<boolean>(false);
   const [currentSubMenu, setCurrentSubMenu] = useState<number>(0);
   const subMenuArray = [
