@@ -15,10 +15,11 @@ export default function SettingsModal() {
   const initialSubMenuProgress = useRef(null);
   const [formSubmitted, setFormSubmitted] = useState<boolean>(false);
   const [currentSubMenu, setCurrentSubMenu] = useState<number>(0);
-  const subMenuArray = [
+  const subMenuElementsArray = [
     <GeneralSubMenu key={1} progress={{ value: subMenuProgress, setValue: setSubMenuProgress }} />,
     <SpotifySubMenu key={2} progress={{ value: subMenuProgress, setValue: setSubMenuProgress }} />,
   ];
+  const subMenuNamesArray = ['General', 'Spotify'];
 
   useEffect(() => {
     async function fetchPreferences() {
@@ -88,7 +89,7 @@ export default function SettingsModal() {
           <div className='grid grid-cols-[1fr,_3fr] gap-4 flex-1 min-h-0'>
             <div className='bg-blackRaspberry-600 rounded-lg'>
               <ul className='flex flex-col items-center p-2 gap-1'>
-                {subMenuArray.map((subMenu, index) => {
+                {subMenuElementsArray.map((subMenu, index) => {
                   return (
                     <ListSelectElement
                       key={index}
@@ -98,14 +99,14 @@ export default function SettingsModal() {
                       }}
                       currentSubMenu={currentSubMenu}
                       index={index}>
-                      {subMenu.type.name.split('SubMenu')[0]}
+                      {subMenuNamesArray[index]}
                     </ListSelectElement>
                   );
                 })}
               </ul>
             </div>
             <div className='bg-blackRaspberry-600 rounded-lg px-4 py-2 h-0 min-h-full overflow-y-auto'>
-              {subMenuArray[subMenu]}
+              {subMenuElementsArray[subMenu]}
             </div>
           </div>
         </Modal>
