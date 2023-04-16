@@ -1,18 +1,22 @@
-import { useState, useContext } from 'react';
-import { SpotifyDataContext } from '../pages/profile';
+import { useState, useContext, useEffect } from 'react';
+import { UserDataContext } from '../pages/profile';
 import Dashboard from './Dashboard';
 import TopTen from './TopTen';
 
 export default function SpotifyStatsSection(props: { statType: number }) {
-  const [timeRange, setTimeRange] = useState<'short_term' | 'medium_term' | 'long_term'>(
-    'medium_term'
-  );
-  const spotifyData = useContext(SpotifyDataContext);
+  const userData = useContext(UserDataContext);
+  const spotifyData = userData.spotifyData;
+  const [timeRange, setTimeRange] = useState<'short_term' | 'medium_term' | 'long_term'>(null);
   const topItems = spotifyData.topItems;
   let currentItems: {
     tracks: SpotifyApi.UsersTopTracksResponse;
     artists: SpotifyApi.UsersTopArtistsResponse;
   };
+
+  useEffect(() => {
+    const tracksOrArtist = props.statType === 1 ? 'topTracks' : 'topArtists';
+    setTimeRange(userData.preferences.spotify.defaults.timeRange[tracksOrArtist]);
+  }, [props.statType, userData.preferences.spotify.defaults.timeRange]);
 
   switch (timeRange) {
     case 'short_term':

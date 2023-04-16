@@ -3,12 +3,12 @@ import { Chart as ChartJS, ArcElement, Tooltip } from 'chart.js';
 import DashboardSection from './DashboardSection';
 import { useEffect, useState, useContext } from 'react';
 import SpotifyStatCard from './SpotifyStatCard';
-import { SessionContext, SpotifyDataContext } from '../pages/profile';
+import { SessionContext, UserDataContext } from '../pages/profile';
 
 export default function Dashboard() {
   const [adjective, setAdjective] = useState<string>(null);
   const session = useContext(SessionContext);
-  const spotifyData = useContext(SpotifyDataContext);
+  const spotifyData = useContext(UserDataContext).spotifyData;
   const recentTracks = spotifyData.recentTracks.tracks;
   const tracksMood = spotifyData.recentTracks.tracksMood;
 
