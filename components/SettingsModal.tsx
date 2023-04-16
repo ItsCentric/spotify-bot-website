@@ -1,5 +1,5 @@
 import Modal from './Modal';
-import { ModalContext } from '../pages/profile';
+import { ModalContext, UserDataContext } from '../pages/profile';
 import { useContext, useEffect, useRef, useState } from 'react';
 import ListSelectElement from './ListSelectElement';
 import SpotifySubMenu from './SpotifySubMenu';
@@ -9,10 +9,11 @@ import { Preferences } from '../models/User';
 
 export default function SettingsModal() {
   const modal = useContext(ModalContext);
+  const userData = useContext(UserDataContext);
   const [unsavedChanges, setUnsavedChanges] = useState<JSX.Element>(null);
   const [subMenu, setSubMenu] = useState<number>(0);
-  const [subMenuProgress, setSubMenuProgress] = useState<Preferences>(null);
-  const initialSubMenuProgress = useRef(null);
+  const [subMenuProgress, setSubMenuProgress] = useState(userData.preferences);
+  const initialSubMenuProgress = useRef(userData.preferences);
   const [formSubmitted, setFormSubmitted] = useState<boolean>(false);
   const [currentSubMenu, setCurrentSubMenu] = useState<number>(0);
   const subMenuElementsArray = [
@@ -21,18 +22,6 @@ export default function SettingsModal() {
   ];
   const subMenuNamesArray = ['General', 'Spotify'];
 
-  useEffect(() => {
-    async function fetchPreferences() {
-      try {
-        const { data } = await axios.get('/api/user/preferences');
-        setSubMenuProgress(data.preferences);
-        initialSubMenuProgress.current = data.preferences;
-      } catch (error) {
-        console.error(error);
-      }
-    }
-    fetchPreferences();
-  }, []);
   useEffect(() => {
     const isInitial =
       JSON.stringify(subMenuProgress) === JSON.stringify(initialSubMenuProgress.current);

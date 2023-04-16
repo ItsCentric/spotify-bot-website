@@ -5,13 +5,13 @@ import { GoGraph } from 'react-icons/go';
 import { FaSignOutAlt } from 'react-icons/fa';
 import { BiMenu } from 'react-icons/bi';
 import Image from 'next/image';
-import { ModalContext, SessionContext, SpotifyDataContext } from '../pages/profile';
+import { ModalContext, SessionContext, UserDataContext } from '../pages/profile';
 import { signOut } from 'next-auth/react';
 import Tooltip from './Tooltip';
 
 export default function Sidebar(props: { setStatType: Function }) {
   const session = useContext(SessionContext);
-  const spotifyData = useContext(SpotifyDataContext);
+  const spotifyData = useContext(UserDataContext).spotifyData;
   const modal = useContext(ModalContext);
   const userInfo = spotifyData.userInfo;
   const [open, setOpen] = useState(false);

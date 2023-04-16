@@ -16,14 +16,17 @@ import Account from '../models/Account';
 import connection from '../lib/mongooseConnect';
 import type { RecentTracksData, SpotifyData, TopItems, TrackMood } from '../types/types';
 import SettingsModal from '../components/SettingsModal';
+import User, { Preferences } from '../models/User';
 
 export const SessionContext = createContext<Session>(null);
 export const getServerSideProps: GetServerSideProps = async (context) => {
   console.time('getServerSideProps');
   const session: Session = await unstable_getServerSession(context.req, context.res, authOptions);
   let accessToken = session.accessToken;
-  const userInfo = await fetchSpotifyUser(accessToken);
   await connection();
+  const userInfo = await fetchSpotifyUser(accessToken);
+  const user = await User.findById(session.user.id).lean();
+  const preferences = user.preferences;
 
   if (new Date().toISOString() > new Date(session.accessTokenExpires).toISOString()) {
     const account = await Account.findOne({ access_token: accessToken });
@@ -84,18 +87,26 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
   return {
     props: {
-      spotifyData: {
-        userInfo,
-        topItems,
-        recentTracks,
+      userData: {
+        spotifyData: {
+          userInfo,
+          topItems,
+          recentTracks,
+        },
+        preferences: { ...JSON.parse(JSON.stringify(preferences)) },
       },
     },
   };
 };
 
-export const SpotifyDataContext = createContext<SpotifyData>(null);
+export const UserDataContext = createContext<{
+  spotifyData: SpotifyData;
+  preferences: Preferences;
+}>(null);
 export const ModalContext = createContext<{ value: number; setValue: Function } | null>(null);
-export default function Profile(props: { spotifyData: SpotifyData }) {
+export default function Profile(props: {
+  userData: { spotifyData: SpotifyData; preferences: Preferences };
+}) {
   /* 
     0: top 3 tracks and top 3 artists
     1: top 10 tracks
@@ -103,29 +114,30 @@ export default function Profile(props: { spotifyData: SpotifyData }) {
   */
   const [statType, setStatType] = useState(0);
   const [modal, setModal] = useState<number>(null);
-  const topItems = props.spotifyData.topItems;
-  const userInfo = props.spotifyData.userInfo;
+  const topItems = props.userData.spotifyData.topItems;
+  const userInfo = props.userData.spotifyData.userInfo;
   const [session, setSession] = useState<Session>(null);
-  const [spotifyData, setSpotifyData] = useState<{
-    topItems: TopItems;
-    userInfo: SpotifyApi.CurrentUsersProfileResponse;
-    recentTracks: RecentTracksData;
-  }>(null);
+  const [userData, setUserData] = useState<{ spotifyData: SpotifyData; preferences: Preferences }>(
+    null
+  );
 
   useEffect(() => {
     if (!session) {
       getSession().then((sessionRes) => setSession(sessionRes));
     }
 
-    if (!spotifyData) {
-      setSpotifyData({
-        topItems: topItems,
-        userInfo: userInfo,
-        recentTracks: props.spotifyData.recentTracks,
+    if (!userData) {
+      setUserData({
+        spotifyData: {
+          topItems: topItems,
+          userInfo: userInfo,
+          recentTracks: props.userData.spotifyData.recentTracks,
+        },
+        preferences: props.userData.preferences,
       });
     }
   });
-  if (!session || !spotifyData) return <div></div>;
+  if (!session || !userData) return <div></div>;
   else {
     return (
       <>
@@ -136,20 +148,20 @@ export default function Profile(props: { spotifyData: SpotifyData }) {
           <link rel='canonical' href='https://musicwizard.vercel.app/' key='canonical' />
         </Head>
 
-        <ModalContext.Provider value={{ value: modal, setValue: setModal }}>
-          <SettingsModal />
-          <div className='lg:min-h-screen flex flex-col'>
-            <SiteNav></SiteNav>
-            <SessionContext.Provider value={session}>
-              <SpotifyDataContext.Provider value={spotifyData}>
+        <UserDataContext.Provider value={userData}>
+          <ModalContext.Provider value={{ value: modal, setValue: setModal }}>
+            <SettingsModal />
+            <div className='lg:min-h-screen flex flex-col'>
+              <SiteNav></SiteNav>
+              <SessionContext.Provider value={session}>
                 <div className='p-4 block lg:grid lg:grid-cols-[auto,_3fr] lg:gap-12 lg:flex-1'>
                   <Sidebar setStatType={setStatType} />
                   <SpotifyStatsSection statType={statType} />
                 </div>
-              </SpotifyDataContext.Provider>
-            </SessionContext.Provider>
-          </div>
-        </ModalContext.Provider>
+              </SessionContext.Provider>
+            </div>
+          </ModalContext.Provider>
+        </UserDataContext.Provider>
 
         <div className='flex items-center justify-center mb-4'>
           <p className='m-0 mr-3 font-medium text-2xl'>Powered by</p>
