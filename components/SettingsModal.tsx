@@ -5,7 +5,7 @@ import ListSelectElement from './ListSelectElement';
 import SpotifySubMenu from './SpotifySubMenu';
 import GeneralSubMenu from './GeneralSubMenu';
 import axios from 'axios';
-import { Preferences } from '../models/User';
+import ConnectedAccountsSubMenu from './ConnectedAccountsSubMenu';
 
 export default function SettingsModal() {
   const modal = useContext(ModalContext);
@@ -19,8 +19,9 @@ export default function SettingsModal() {
   const subMenuElementsArray = [
     <GeneralSubMenu key={1} progress={{ value: subMenuProgress, setValue: setSubMenuProgress }} />,
     <SpotifySubMenu key={2} progress={{ value: subMenuProgress, setValue: setSubMenuProgress }} />,
+    <ConnectedAccountsSubMenu key={3} />,
   ];
-  const subMenuNamesArray = ['General', 'Spotify'];
+  const subMenuNamesArray = ['General', 'Spotify', 'Connected Accounts'];
 
   useEffect(() => {
     const isInitial =

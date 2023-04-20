@@ -19,10 +19,10 @@ export default function Tooltip(props: {
 
   return (
     <div
-      className={
-        'group-hover:block hidden absolute bottom-full bg-black text-white opacity-85 rounded-lg whitespace-nowrap p-1 z-10 pointer-events-none ' +
-        alignment
-      }>
+      className={`group-hover:block hidden absolute ${
+        props.position === 'top' ? 'bottom' : '-bottom'
+      }-full bg-black text-white opacity-85 rounded-lg whitespace-nowrap p-1 z-10 pointer-events-none
+        ${alignment}`}>
       {props.children}
     </div>
   );
