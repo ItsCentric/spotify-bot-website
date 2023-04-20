@@ -7,6 +7,7 @@ import clientPromise from '../../../lib/mongodb';
 import encryption from '../../../lib/encryption';
 import Account from '../../../models/Account';
 import connection from '../../../lib/mongooseConnect';
+import User from '../../../models/User';
 
 /**
  * Takes a token, and returns a new token with updated
@@ -108,6 +109,38 @@ export const authOptions: NextAuthOptions = {
       session.accessTokenExpires = token.accessTokenExpires;
       session.error = token.error;
       return session;
+    },
+  },
+  events: {
+    async createUser(message) {
+      const userObject = message.user;
+      await connection();
+      const user = await User.findById(userObject.id);
+      user.preferences = {
+        general: {
+          locale: {
+            language: 'en',
+            country: 'US',
+          },
+        },
+        spotify: {
+          privacy: {
+            privateProfile: false,
+            privateTopTracks: false,
+            privateTopArtists: false,
+            privateNowPlaying: false,
+            whitelist: [],
+            blacklist: [],
+          },
+          defaults: {
+            timeRange: {
+              topTracks: 'medium_term',
+              topArtists: 'medium_term',
+            },
+          },
+        },
+      };
+      user.save();
     },
   },
 };

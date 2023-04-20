@@ -3,12 +3,17 @@ import FormInput from './FormInput';
 import countries, { languagesAll } from 'countries-list';
 import { Preferences } from '../models/User';
 import handleInputChange from '../lib/handleInputChange';
+import axios from 'axios';
+import { useRouter } from 'next/router';
+import { signOut } from 'next-auth/react';
 
 export default function GeneralSubMenu(props: {
   progress: { value: Preferences; setValue: Function };
 }) {
   const [time, setTime] = useState(10);
+  const router = useRouter();
   const [activatedTimer, setActivatedTimer] = useState(false);
+  const [deleteUser, setDeleteUser] = useState(false);
   const formProgress = props.progress.value?.general;
   const handleInputChangeCallback = useCallback(handleInputChange, []);
   const countryNames = Object.values(countries.countries).map((country, index) => {
@@ -43,6 +48,15 @@ export default function GeneralSubMenu(props: {
       clearInterval(timer);
     };
   }, [activatedTimer, time, props.progress]);
+
+  useEffect(() => {
+    async function unlinkUser() {
+      await axios.delete('/api/user/unlink');
+      router.push('/');
+      await signOut();
+    }
+    if (deleteUser) unlinkUser();
+  }, [deleteUser, router]);
 
   return (
     <>
@@ -80,7 +94,10 @@ export default function GeneralSubMenu(props: {
           <button
             className='bg-red-500 enabled:hover:bg-red-600 disabled:contrast-75 p-1.5 rounded-lg inline-block mb-1'
             disabled={time !== 0 && activatedTimer}
-            onClick={() => setActivatedTimer(true)}>
+            onClick={() => {
+              if (!activatedTimer && time === 0) setDeleteUser(true);
+              else if (!activatedTimer) setActivatedTimer(true);
+            }}>
             Unlink Account
           </button>
           <p
