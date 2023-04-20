@@ -10,11 +10,7 @@ export interface IAccount {
   expires_at: number;
   refresh_token: EncryptedContent;
   scope: string;
-  userId: {
-    type: Types.ObjectId;
-    ref: string;
-    required: Boolean;
-  };
+  userId: Types.ObjectId;
 }
 
 interface IAccountMethods {
