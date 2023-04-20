@@ -52,7 +52,7 @@ export default function GeneralSubMenu(props: {
   useEffect(() => {
     async function unlinkUser() {
       await axios.delete('/api/user/unlink');
-      router.push('/');
+      await router.push('/');
       await signOut();
     }
     if (deleteUser) unlinkUser();
