@@ -5,13 +5,14 @@ import { GoGraph } from 'react-icons/go';
 import { FaSignOutAlt } from 'react-icons/fa';
 import { BiMenu } from 'react-icons/bi';
 import Image from 'next/image';
-import { SessionContext, SpotifyDataContext } from '../pages/profile';
+import { ModalContext, SessionContext, UserDataContext } from '../pages/profile';
 import { signOut } from 'next-auth/react';
 import Tooltip from './Tooltip';
 
 export default function Sidebar(props: { setStatType: Function }) {
   const session = useContext(SessionContext);
-  const spotifyData = useContext(SpotifyDataContext);
+  const spotifyData = useContext(UserDataContext).spotifyData;
+  const modal = useContext(ModalContext);
   const userInfo = spotifyData.userInfo;
   const [open, setOpen] = useState(false);
 
@@ -81,12 +82,9 @@ export default function Sidebar(props: { setStatType: Function }) {
         </ul>
       </div>
       <div className={'justify-between ' + (open ? 'flex' : 'hidden lg:flex')}>
-        <div className='text-red-400 group relative cursor-default'>
+        <button className='hover:text-white/80' onClick={() => modal.setValue(0)}>
           <BsPersonFillGear className='h-6 w-6' />
-          <Tooltip position='top' alignment='left'>
-            This feature is a work in progress!
-          </Tooltip>
-        </div>
+        </button>
         <button className='hover:text-white/80' onClick={() => signOut({ callbackUrl: '/' })}>
           <FaSignOutAlt className='h-6 w-6' />
         </button>

@@ -9,37 +9,35 @@ import type { Session } from 'next-auth';
 import decryption from '../lib/decryption';
 import encryption from '../lib/encryption';
 import SpotifyStatsSection from '../components/SpotifyStatsSection';
-import connectionPromise from '../lib/mongodb';
 import { createContext, useEffect, useState } from 'react';
 import Sidebar from '../components/Sidebar';
 import { getSession } from 'next-auth/react';
-import type {
-  AccessToken,
-  EncryptedContent,
-  RecentTracksData,
-  SpotifyData,
-  TopItems,
-  TrackMood,
-} from '../types/types';
+import Account from '../models/Account';
+import connection from '../lib/mongooseConnect';
+import type { RecentTracksData, SpotifyData, TopItems, TrackMood } from '../types/types';
+import SettingsModal from '../components/SettingsModal';
+import User, { Preferences } from '../models/User';
 
 export const SessionContext = createContext<Session>(null);
 export const getServerSideProps: GetServerSideProps = async (context) => {
   console.time('getServerSideProps');
   const session: Session = await unstable_getServerSession(context.req, context.res, authOptions);
   let accessToken = session.accessToken;
+  await connection();
   const userInfo = await fetchSpotifyUser(accessToken);
+  const user = await User.findById(session.user.id).lean();
+  const preferences = user.preferences;
 
   if (new Date().toISOString() > new Date(session.accessTokenExpires).toISOString()) {
-    const connection = await connectionPromise;
-    const accounts = connection.db('test').collection('accounts');
-    let encryptedRefreshToken: EncryptedContent;
-    let newAccessToken: AccessToken;
-
-    await accounts
-      .findOne({ access_token: accessToken })
-      .then((res) => (encryptedRefreshToken = res.refresh_token))
-      .catch((err) => console.log(err));
-    newAccessToken = await refreshAccessToken(decryption(encryptedRefreshToken.encryptedData, encryptedRefreshToken.iv, encryptedRefreshToken.authTag));
+    const account = await Account.findOne({ access_token: accessToken });
+    const encryptedRefreshToken = account.refresh_token;
+    const newAccessToken = await refreshAccessToken(
+      decryption(
+        encryptedRefreshToken.encryptedData,
+        encryptedRefreshToken.iv,
+        encryptedRefreshToken.authTag
+      )
+    );
     accessToken = newAccessToken.accessToken;
     session.accessTokenExpires = newAccessToken.accessTokenExpires;
     await persistRefreshToken(newAccessToken.refreshToken, accessToken);
@@ -89,49 +87,60 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
   return {
     props: {
-      spotifyData: {
-        userInfo,
-        topItems,
-        recentTracks,
+      userData: {
+        spotifyData: {
+          userInfo,
+          topItems,
+          recentTracks,
+        },
+        preferences: { ...JSON.parse(JSON.stringify(preferences)) },
       },
     },
   };
 };
 
-export const SpotifyDataContext = createContext<SpotifyData>(null);
-export default function Profile(props: { spotifyData: SpotifyData }) {
+export const UserDataContext = createContext<{
+  spotifyData: SpotifyData;
+  preferences: Preferences;
+}>(null);
+export const ModalContext = createContext<{ value: number; setValue: Function } | null>(null);
+export default function Profile(props: {
+  userData: { spotifyData: SpotifyData; preferences: Preferences };
+}) {
   /* 
     0: top 3 tracks and top 3 artists
     1: top 10 tracks
     2: top 10 artists
   */
   const [statType, setStatType] = useState(0);
-  const topItems = props.spotifyData.topItems;
-  const userInfo = props.spotifyData.userInfo;
+  const [modal, setModal] = useState<number>(null);
+  const topItems = props.userData.spotifyData.topItems;
+  const userInfo = props.userData.spotifyData.userInfo;
   const [session, setSession] = useState<Session>(null);
-  const [spotifyData, setSpotifyData] = useState<{
-    topItems: TopItems;
-    userInfo: SpotifyApi.CurrentUsersProfileResponse;
-    recentTracks: RecentTracksData;
-  }>(null);
+  const [userData, setUserData] = useState<{ spotifyData: SpotifyData; preferences: Preferences }>(
+    null
+  );
 
   useEffect(() => {
     if (!session) {
       getSession().then((sessionRes) => setSession(sessionRes));
     }
 
-    if (!spotifyData) {
-      setSpotifyData({
-        topItems: topItems,
-        userInfo: userInfo,
-        recentTracks: props.spotifyData.recentTracks,
+    if (!userData) {
+      setUserData({
+        spotifyData: {
+          topItems: topItems,
+          userInfo: userInfo,
+          recentTracks: props.userData.spotifyData.recentTracks,
+        },
+        preferences: props.userData.preferences,
       });
     }
   });
-  if (!session || !spotifyData) return <div></div>;
+  if (!session || !userData) return <div></div>;
   else {
     return (
-      <div>
+      <>
         <Head>
           <title>Music Wizard | Profile</title>
           <meta name='robots' content='noindex' key='robots' />
@@ -139,17 +148,20 @@ export default function Profile(props: { spotifyData: SpotifyData }) {
           <link rel='canonical' href='https://musicwizard.vercel.app/' key='canonical' />
         </Head>
 
-        <div className='lg:min-h-screen flex flex-col'>
-          <SiteNav></SiteNav>
-          <SessionContext.Provider value={session}>
-            <SpotifyDataContext.Provider value={spotifyData}>
-              <div className='p-4 block lg:grid lg:grid-cols-[auto,_3fr] lg:gap-12 lg:flex-1'>
-                <Sidebar setStatType={setStatType} />
-                <SpotifyStatsSection statType={statType} />
-              </div>
-            </SpotifyDataContext.Provider>
-          </SessionContext.Provider>
-        </div>
+        <UserDataContext.Provider value={userData}>
+          <ModalContext.Provider value={{ value: modal, setValue: setModal }}>
+            <SettingsModal />
+            <div className='lg:min-h-screen flex flex-col'>
+              <SiteNav></SiteNav>
+              <SessionContext.Provider value={session}>
+                <div className='p-4 block lg:grid lg:grid-cols-[auto,_3fr] lg:gap-12 lg:flex-1'>
+                  <Sidebar setStatType={setStatType} />
+                  <SpotifyStatsSection statType={statType} />
+                </div>
+              </SessionContext.Provider>
+            </div>
+          </ModalContext.Provider>
+        </UserDataContext.Provider>
 
         <div className='flex items-center justify-center mb-4'>
           <p className='m-0 mr-3 font-medium text-2xl'>Powered by</p>
@@ -159,7 +171,7 @@ export default function Profile(props: { spotifyData: SpotifyData }) {
             height={60}
             alt='spotify logo'></Image>
         </div>
-      </div>
+      </>
     );
   }
 }
@@ -222,13 +234,10 @@ async function fetchSpotifyUser(token: string) {
 
 async function persistRefreshToken(refreshToken: string, accessToken: string) {
   const encryptedRefreshToken = encryption(refreshToken);
-  const connection = await connectionPromise;
-  const accounts = connection.db('test').collection('accounts');
 
-  accounts.updateOne(
-    { accessToken: accessToken },
-    { $set: { refreshToken: encryptedRefreshToken } }
-  );
+  const accountToUpdate = await Account.findOne({ accessToken: accessToken });
+  accountToUpdate.refresh_token = encryptedRefreshToken;
+  accountToUpdate.save();
 }
 
 async function getRecentTracks(accessToken: string) {
@@ -287,12 +296,16 @@ function recentTracksMood(tracks: SpotifyApi.AudioFeaturesObject[]) {
       value: 0,
     },
     array: [1, 1, 1, 1],
-    total: tracks.length,
+    total: 0,
   };
+  const filteredTracks = tracks.filter((track) => {
+    if (track) return track;
+  });
 
-  tracks.forEach((track) => {
+  filteredTracks.forEach((track) => {
     recentTrackFeatures[determineTrackMood(track)] += 1;
   });
+  recentTrackFeatures.total = filteredTracks.length;
   recentTrackFeatures.array = [
     recentTrackFeatures.danceability,
     recentTrackFeatures.energy,

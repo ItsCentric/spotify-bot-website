@@ -5,8 +5,9 @@ import axios from 'axios';
 import { MongoDBAdapter } from '@next-auth/mongodb-adapter';
 import clientPromise from '../../../lib/mongodb';
 import encryption from '../../../lib/encryption';
-import { ObjectId } from 'mongodb';
-import type { Db, Collection, Document } from 'mongodb';
+import Account from '../../../models/Account';
+import connection from '../../../lib/mongooseConnect';
+import User from '../../../models/User';
 
 /**
  * Takes a token, and returns a new token with updated
@@ -71,26 +72,21 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async jwt({ token, user, account }) {
+      await connection();
       if (account) {
         token.accessToken = account.access_token;
       }
       // Initial sign in
       if (account && user) {
-        let db: Db;
-        let collection: Collection<Document>;
-
-        await clientPromise.then((client) => (db = client.db('test')));
-        collection = db.collection('accounts');
-        await collection.updateOne(
-          { userId: new ObjectId(user.id) },
-          {
-            $set: {
-              access_token: encryption(account.access_token),
-              refresh_token: encryption(account.refresh_token),
-              expires_at: Date.now() + 3600,
-            },
-          }
+        const accountToUpdate = await Account.findOne({
+          providerAccountId: account.providerAccountId,
+        });
+        accountToUpdate.updateTokens(
+          encryption(account.access_token),
+          encryption(account.refresh_token)
         );
+        accountToUpdate.save();
+
         return {
           accessToken: account.access_token,
           accessTokenExpires: Date.now() + 3600,
@@ -113,6 +109,38 @@ export const authOptions: NextAuthOptions = {
       session.accessTokenExpires = token.accessTokenExpires;
       session.error = token.error;
       return session;
+    },
+  },
+  events: {
+    async createUser(message) {
+      const userObject = message.user;
+      await connection();
+      const user = await User.findById(userObject.id);
+      user.preferences = {
+        general: {
+          locale: {
+            language: 'en',
+            country: 'US',
+          },
+        },
+        spotify: {
+          privacy: {
+            privateProfile: false,
+            privateTopTracks: false,
+            privateTopArtists: false,
+            privateNowPlaying: false,
+            whitelist: [],
+            blacklist: [],
+          },
+          defaults: {
+            timeRange: {
+              topTracks: 'medium_term',
+              topArtists: 'medium_term',
+            },
+          },
+        },
+      };
+      user.save();
     },
   },
 };

@@ -3,12 +3,12 @@ import { Chart as ChartJS, ArcElement, Tooltip } from 'chart.js';
 import DashboardSection from './DashboardSection';
 import { useEffect, useState, useContext } from 'react';
 import SpotifyStatCard from './SpotifyStatCard';
-import { SessionContext, SpotifyDataContext } from '../pages/profile';
+import { SessionContext, UserDataContext } from '../pages/profile';
 
 export default function Dashboard() {
   const [adjective, setAdjective] = useState<string>(null);
   const session = useContext(SessionContext);
-  const spotifyData = useContext(SpotifyDataContext);
+  const spotifyData = useContext(UserDataContext).spotifyData;
   const recentTracks = spotifyData.recentTracks.tracks;
   const tracksMood = spotifyData.recentTracks.tracksMood;
 
@@ -36,17 +36,16 @@ export default function Dashboard() {
     <div className='p-4 md:p-8'>
       <h1 className='text-4xl font-bold mb-4'>
         How have you been listening,{' '}
-        <span className='text-green-light'>
-          {session ? session.user.name : ''}
-        </span>
-        ?
+        <span className='text-green-light'>{session ? session.user.name : ''}</span>?
       </h1>
       <div className='flex flex-col md:grid md:grid-cols-2 bg-blackRaspberry-600 rounded-lg gap-8 p-4'>
         <DashboardSection
           heading='Your Listening Overview'
           subheading={`${roundToPercent(
             tracksMood.largest.value / tracksMood.total
-          )}% of your recent tracks were ${adjective}.`}>
+          )}% of your recent tracks were ${adjective}.`}
+          info={true}
+          infoText={`${spotifyData.recentTracks.tracksMood.total} tracks were included in this statistic.`}>
           <Doughnut
             data={{
               labels: ['Danceability', 'Energy', 'Acousticness', 'Valence'],
@@ -71,9 +70,7 @@ export default function Dashboard() {
             width={300}
           />
         </DashboardSection>
-        <DashboardSection
-          heading='Recent Tracks'
-          subheading={"What's on the menu lately?"}>
+        <DashboardSection heading='Recent Tracks' subheading={"What's on the menu lately?"}>
           <div className='flex flex-col 2xl:flex-row gap-4 flex-1 max-w-full'>
             <SpotifyStatCard data={recentTracks[0].track} />
             <SpotifyStatCard data={recentTracks[1].track} />
