@@ -142,6 +142,15 @@ export const authOptions: NextAuthOptions = {
       };
       user.save();
     },
+    async signIn(message) {
+      if (message.isNewUser) {
+        await connection();
+        const account = await Account.findOne({ userId: message.user.id });
+        const user = await User.findById(message.user.id);
+        user.accounts.push(account._id);
+        user.save();
+      }
+    },
   },
 };
 

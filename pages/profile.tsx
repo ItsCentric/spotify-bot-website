@@ -17,6 +17,7 @@ import connection from '../lib/mongooseConnect';
 import type { RecentTracksData, SpotifyData, TopItems, TrackMood } from '../types/types';
 import SettingsModal from '../components/SettingsModal';
 import User, { Preferences } from '../models/User';
+import { getCacheItem, setCacheItem } from '../lib/redisClient';
 
 export const SessionContext = createContext<Session>(null);
 export const getServerSideProps: GetServerSideProps = async (context) => {
@@ -24,9 +25,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const session: Session = await unstable_getServerSession(context.req, context.res, authOptions);
   let accessToken = session.accessToken;
   await connection();
-  const userInfo = await fetchSpotifyUser(accessToken);
-  const user = await User.findById(session.user.id).lean();
-  const preferences = user.preferences;
+  let preferences: Preferences;
 
   if (new Date().toISOString() > new Date(session.accessTokenExpires).toISOString()) {
     const account = await Account.findOne({ access_token: accessToken });
@@ -45,9 +44,32 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
   if (session.error) throw new Error(session.error);
 
-  const shortTerm = await fetchTopSpotifyItems(accessToken, 'short_term');
-  const mediumTerm = await fetchTopSpotifyItems(accessToken, 'medium_term');
-  const longTerm = await fetchTopSpotifyItems(accessToken, 'long_term');
+  const cachedPreferences = await getCacheItem('preferences', session.user.id.toString());
+  if (cachedPreferences) preferences = cachedPreferences;
+  else {
+    const user = await User.findById(session.user.id).lean();
+    preferences = { general: user.preferences.general, spotify: user.preferences.spotify };
+    await setCacheItem('preferences', preferences, session.user.id.toString());
+  }
+
+  const cachedUserInfo = await getCacheItem('userInfo', session.user.id.toString());
+  let userInfo: SpotifyApi.CurrentUsersProfileResponse;
+  if (cachedUserInfo) userInfo = cachedUserInfo.spotify;
+  else {
+    userInfo = await fetchSpotifyUser(accessToken);
+    await setCacheItem('userInfo', { spotify: userInfo }, session.user.id.toString());
+  }
+
+  const cachedTopItems = await getCacheItem('topItems', session.user.id.toString());
+  let topItems: TopItems;
+  if (cachedTopItems) topItems = cachedTopItems;
+  else {
+    const shortTerm = await fetchTopSpotifyItems(accessToken, 'short_term');
+    const mediumTerm = await fetchTopSpotifyItems(accessToken, 'medium_term');
+    const longTerm = await fetchTopSpotifyItems(accessToken, 'long_term');
+    topItems = { shortTerm, mediumTerm, longTerm };
+    await setCacheItem('topItems', topItems, session.user.id.toString());
+  }
   const recentTracksData = await getRecentTracks(accessToken);
   const trackFeatures = await getTracksFeatures(recentTracksData.items, accessToken);
   const tracksMood = recentTracksMood(trackFeatures.audio_features);
@@ -78,11 +100,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
 
-  const topItems: TopItems = {
-    shortTerm,
-    mediumTerm,
-    longTerm,
-  };
   console.timeEnd('getServerSideProps');
 
   return {
