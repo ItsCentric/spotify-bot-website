@@ -4,7 +4,6 @@ export default function handleInputChange(
   event: any,
   stateObject: { value: any; setValue: Function }
 ) {
-  console.log(stateObject);
   const target = event.target;
   const value = target.type !== 'checkbox' ? target.value : target.checked;
   const splitArray = target.name.split('-');
