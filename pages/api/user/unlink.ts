@@ -5,6 +5,7 @@ import { Session } from 'next-auth';
 import Account from '../../../models/Account';
 import { MongoDBAdapter } from '@next-auth/mongodb-adapter';
 import clientPromise from '../../../lib/mongodb';
+import { deleteCacheItem } from '../../../lib/redisClient';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   await connection();
@@ -21,7 +22,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 }
 
 async function handleDELETE(user: Session['user']) {
+  const userIdString = user.id.toString();
   const adapter = MongoDBAdapter(clientPromise);
-  await adapter.deleteUser(user.id.toString());
+  await adapter.deleteUser(userIdString);
   await Account.deleteMany({ userId: user.id });
+  await deleteCacheItem('userInfo', userIdString);
+  await deleteCacheItem('accounts', userIdString);
+  await deleteCacheItem('preferences', userIdString);
+  await deleteCacheItem('topItems', userIdString);
 }
