@@ -44,23 +44,23 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
   if (session.error) throw new Error(session.error);
 
-  const cachedPreferences = await getCacheItem('preferences', session.user.id.toString());
+  const cachedPreferences = await getCacheItem('preferences', session.user.id);
   if (cachedPreferences) preferences = cachedPreferences;
   else {
     const user = await User.findById(session.user.id).lean();
     preferences = { general: user.preferences.general, spotify: user.preferences.spotify };
-    await setCacheItem('preferences', preferences, session.user.id.toString());
+    await setCacheItem('preferences', preferences, session.user.id);
   }
 
-  const cachedUserInfo = await getCacheItem('userInfo', session.user.id.toString());
+  const cachedUserInfo = await getCacheItem('userInfo', session.user.id);
   let userInfo: SpotifyApi.CurrentUsersProfileResponse;
   if (cachedUserInfo) userInfo = cachedUserInfo.spotify;
   else {
     userInfo = await fetchSpotifyUser(accessToken);
-    await setCacheItem('userInfo', { spotify: userInfo }, session.user.id.toString());
+    await setCacheItem('userInfo', { spotify: userInfo }, session.user.id);
   }
 
-  const cachedTopItems = await getCacheItem('topItems', session.user.id.toString());
+  const cachedTopItems = await getCacheItem('topItems', session.user.id);
   let topItems: TopItems;
   if (cachedTopItems) topItems = cachedTopItems;
   else {
@@ -68,7 +68,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     const mediumTerm = await fetchTopSpotifyItems(accessToken, 'medium_term');
     const longTerm = await fetchTopSpotifyItems(accessToken, 'long_term');
     topItems = { shortTerm, mediumTerm, longTerm };
-    await setCacheItem('topItems', topItems, session.user.id.toString());
+    await setCacheItem('topItems', topItems, session.user.id);
   }
   const recentTracksData = await getRecentTracks(accessToken);
   const trackFeatures = await getTracksFeatures(recentTracksData.items, accessToken);
