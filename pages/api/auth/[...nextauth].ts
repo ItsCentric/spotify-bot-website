@@ -14,6 +14,13 @@ import User from '../../../models/User';
  * `accessToken` and `accessTokenExpires`. If an error occurs,
  * returns the old token and an error property
  */
+type AccessTokenResponse = {
+  access_token: string;
+  token_type: string;
+  accessTokenExpires: number;
+  expires_in: number;
+  refresh_token: string;
+};
 export async function refreshAccessToken(token) {
   try {
     const response = await axios.post(
@@ -31,17 +38,17 @@ export async function refreshAccessToken(token) {
       }
     );
 
-    const refreshedTokens = await response.data;
+    const tokenResponse: AccessTokenResponse = await response.data;
 
     if (!response.status) {
-      throw refreshedTokens;
+      throw tokenResponse;
     }
 
     return {
       ...token,
-      accessToken: refreshedTokens.access_token,
-      accessTokenExpires: Date.now() + refreshedTokens.expires_in,
-      refreshToken: refreshedTokens.refresh_token ?? token.refreshToken, // Fall back to old refresh token
+      accessToken: tokenResponse.access_token,
+      accessTokenExpires: Date.now() + tokenResponse.expires_in,
+      refreshToken: tokenResponse.refresh_token ?? token.refreshToken, // Fall back to old refresh token
       error: null,
     };
   } catch (error) {
@@ -78,15 +85,6 @@ export const authOptions: NextAuthOptions = {
       }
       // Initial sign in
       if (account && user) {
-        const accountToUpdate = await Account.findOne({
-          providerAccountId: account.providerAccountId,
-        });
-        accountToUpdate.updateTokens(
-          encryption(account.access_token),
-          encryption(account.refresh_token)
-        );
-        accountToUpdate.save();
-
         return {
           accessToken: account.access_token,
           accessTokenExpires: Date.now() + 3600,
