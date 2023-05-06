@@ -1,26 +1,11 @@
-import Head from 'next/head';
-import SiteNav from '../components/SiteNav';
-import Footer from '../components/Footer';
+'use client';
 
-export default function Home() {
+import Footer from '../components/Footer';
+import SiteNav from '../components/SiteNav';
+
+export default function LegacyIndexPage() {
   return (
-    //* metadata
-    <div className='dark:bg-zinc-800'>
-      <Head>
-        <title>Music Wizard</title>
-        <meta
-          name='description'
-          content='A Discord bot that intergrates features from Spotify.'
-          key='desc'
-        />
-        <meta property='og:title' content='Music Wizard - Discord Bot' />
-        <meta
-          property='og:description'
-          content='A Discord bot that intergrates features from Spotify and other services. See your top songs and artists, recent songs, your friends top songs and artists, what theyre listening to, and more!'
-        />
-        <meta property='og:image' content='public\favicon.ico' />
-        <link rel='canonical' href='https://musicwizard.vercel.app/' key='canonical' />
-      </Head>
+    <>
       <SiteNav />
 
       {
@@ -232,6 +217,6 @@ export default function Home() {
         </div>
       </div>
       <Footer />
-    </div>
+    </>
   );
 }
