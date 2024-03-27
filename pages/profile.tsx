@@ -87,17 +87,17 @@ export default function Profile(props: {
   userData: { spotifyData: SpotifyData; preferences: Preferences };
 }) {
   /* 
-    0: top 3 tracks and top 3 artists
-    1: top 10 tracks
-    2: top 10 artists
-  */
+        0: top 3 tracks and top 3 artists
+        1: top 10 tracks
+        2: top 10 artists
+      */
   const [statType, setStatType] = useState(0);
   const [modal, setModal] = useState<number>(null);
   const topItems = props.userData.spotifyData.topItems;
   const userInfo = props.userData.spotifyData.userInfo;
   const [session, setSession] = useState<Session>(null);
   const [userData, setUserData] = useState<{ spotifyData: SpotifyData; preferences: Preferences }>(
-    null
+    null,
   );
 
   useEffect(() => {
@@ -157,7 +157,7 @@ export default function Profile(props: {
 
 async function fetchTopSpotifyItems(
   token: string,
-  timeRange: 'short_term' | 'medium_term' | 'long_term'
+  timeRange: 'short_term' | 'medium_term' | 'long_term',
 ) {
   let tracks: SpotifyApi.UsersTopTracksResponse;
   let artists: SpotifyApi.UsersTopArtistsResponse;
@@ -233,7 +233,7 @@ async function getRecentTracks(accessToken: string) {
 
 async function getTracksFeatures(
   tracks: { track: SpotifyApi.TrackObjectFull }[],
-  accessToken: string
+  accessToken: string,
 ) {
   let tracksFeaturesRes: AxiosResponse;
   const trackIds = tracks.map((trackObject) => {
@@ -286,7 +286,7 @@ function recentTracksMood(tracks: SpotifyApi.AudioFeaturesObject[]) {
   let sortedArray = [...recentTrackFeatures.array];
   const largestValue = sortedArray.sort((a, b) => a - b)[sortedArray.length - 1];
   recentTrackFeatures.largest.name = Object.keys(recentTrackFeatures).find(
-    (key) => recentTrackFeatures[key] === largestValue
+    (key) => recentTrackFeatures[key] === largestValue,
   );
   recentTrackFeatures.largest.value = largestValue;
 
@@ -309,7 +309,7 @@ async function getPreferences(userId: ObjectId) {
   const cachedPreferences: Preferences = await getCacheItem('preferences', userId);
   if (cachedPreferences) return cachedPreferences;
   else {
-    const user = await User.findOne({ userId });
+    const user = await User.findById(userId);
     await setCacheItem('preferences', user.preferences, userId);
     return user.preferences;
   }
