@@ -15,7 +15,7 @@
     "chart.js": "^4.2.1",
     "countries-list": "^2.6.1",
     "date-fns": "^2.29.3",
-    "dotenv": "^16.0.3",
+    "dotenv": "^16.4.5",
     "mongodb": "^4.9.0",
     "mongoose": "^7.0.3",
     "next": "^13.1.6",
