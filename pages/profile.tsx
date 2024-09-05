@@ -11,7 +11,7 @@ import { createContext, useEffect, useState } from 'react';
 import Sidebar from '../components/Sidebar';
 import { getSession } from 'next-auth/react';
 import connection from '../lib/mongooseConnect';
-import type { RecentTracksData, SpotifyData, TopItems, TrackMood } from '../types/types';
+import type { RecentTracksData, SpotifyData, TrackMood } from '../types/types';
 import SettingsModal from '../components/SettingsModal';
 import User, { Preferences } from '../models/User';
 import { getCacheItem, setCacheItem } from '../lib/redisClient';
@@ -87,10 +87,10 @@ export default function Profile(props: {
   userData: { spotifyData: SpotifyData; preferences: Preferences };
 }) {
   /* 
-        0: top 3 tracks and top 3 artists
-        1: top 10 tracks
-        2: top 10 artists
-      */
+              0: top 3 tracks and top 3 artists
+              1: top 10 tracks
+              2: top 10 artists
+            */
   const [statType, setStatType] = useState(0);
   const [modal, setModal] = useState<number>(null);
   const topItems = props.userData.spotifyData.topItems;
@@ -306,17 +306,17 @@ function determineTrackMood(features: SpotifyApi.AudioFeaturesObject) {
 }
 
 async function getPreferences(userId: ObjectId) {
-  const cachedPreferences: Preferences = await getCacheItem('preferences', userId);
+  const cachedPreferences = await getCacheItem('preferences', userId);
   if (cachedPreferences) return cachedPreferences;
   else {
     const user = await User.findById(userId);
-    await setCacheItem('preferences', user.preferences, userId);
+    await setCacheItem('preferences', user.toObject().preferences, userId);
     return user.preferences;
   }
 }
 
 async function getTopItems(accessToken: string, userId: ObjectId) {
-  const cachedTopItems: TopItems = await getCacheItem('topItems', userId);
+  const cachedTopItems = await getCacheItem('topItems', userId);
   if (cachedTopItems) return cachedTopItems;
   else {
     const shortTerm = await fetchTopSpotifyItems(accessToken, 'short_term');

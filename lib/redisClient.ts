@@ -1,36 +1,45 @@
 import { ObjectId } from 'mongodb';
-import { createClient } from 'redis';
+import { Redis } from '@upstash/redis';
+import { TopItems } from '../types/types';
+import { Preferences } from '../models/User';
+import Account from '../models/Account';
 
 type CacheItem = 'userInfo' | 'topItems' | 'preferences' | 'accounts';
-const client = createClient({ url: process.env.REDIS_URL });
+type Accounts = { accounts: ReturnType<Awaited<typeof Account.find>> };
+type UserInfo = { spotify: SpotifyApi.CurrentUsersProfileResponse };
+type CacheData<T> = T extends 'userInfo'
+  ? UserInfo
+  : T extends 'topItems'
+    ? TopItems
+    : T extends 'preferences'
+      ? Preferences
+      : T extends 'accounts'
+        ? Accounts
+        : never;
 
-client.on('ready', () => {
-  console.log('Redis client ready');
+const client = new Redis({
+  url: process.env.REDIS_URL,
+  token: process.env.REDIS_TOKEN,
 });
 
-client.on('error', (err) => {
-  console.log('Redis error: ' + err);
-});
-
-async function connect() {
-  if (!client.isOpen) {
-    await client.connect();
-  }
+export async function setCacheItem(
+  cacheItem: CacheItem,
+  data: Record<string, unknown>,
+  userId: ObjectId,
+) {
+  await client.hset(`${cacheItem}:${userId.toString()}`, data);
 }
 
-export async function setCacheItem(cacheItem: CacheItem, data: object, userId: ObjectId) {
-  await connect();
-  await client.set(`${cacheItem}:${userId.toString()}`, JSON.stringify(data));
-}
-
-export async function getCacheItem(cacheItem: CacheItem, userId: ObjectId) {
-  await connect();
-  const item = await client.get(`${cacheItem}:${userId.toString()}`);
-
-  return JSON.parse(item);
+export async function getCacheItem<T extends CacheItem>(
+  cacheItem: T,
+  userId: ObjectId,
+): Promise<CacheData<T>> {
+  const item = (await client.hgetall(`${cacheItem}:${userId.toString()}`)) as CacheData<
+    typeof cacheItem
+  >;
+  return item;
 }
 
 export async function deleteCacheItem(cacheItem: CacheItem, userId: ObjectId) {
-  await connect();
   await client.del(`${cacheItem}:${userId.toString()}`);
 }
